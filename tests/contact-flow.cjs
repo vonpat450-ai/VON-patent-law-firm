@@ -18,11 +18,19 @@ assert.match(fullPage, /name="jurisdiction" value="국내" required/);
 for (const field of ['name', 'phone', 'email', 'jurisdiction', 'country', 'category', 'stage', 'message', 'attachment', 'privacy_consent']) {
   assert.ok(fullPage.includes(`name="${field}"`), `${field} is missing`);
 }
-for (const view of [render.home, render.process, render.priority, render.search, render.knowledgePage]) {
+for (const view of [render.home, render.process, render.priority, render.overseas, render.knowledgePage]) {
   const page = view();
   assert.match(page, /id="contact-quick-form"/);
   assert.ok(!page.includes('href="#contact"'));
 }
+const overseasPage = render.overseas();
+assert.match(render.header(), /해외특허등록/);
+assert.match(overseasPage, /개별국 직접출원/);
+assert.match(overseasPage, /PCT 국제출원/);
+assert.match(overseasPage, /overseas-timeline/);
+assert.ok(!overseasPage.includes('patent-search'));
+assert.match(fs.readFileSync(path.join(__dirname, '../dist/overseas.html'), 'utf8'), /data-page="overseas"/);
+assert.match(fs.readFileSync(path.join(__dirname, '../dist/search.html'), 'utf8'), /url=overseas\.html/);
 
 const listeners = {};
 const quickForm = {
