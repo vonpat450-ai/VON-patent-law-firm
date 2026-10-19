@@ -127,3 +127,80 @@ html,body,button,input,select,textarea{font-family:'Pretendard','Malgun Gothic',
 .form-honey{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
 .contact-consent{display:flex;align-items:flex-start;gap:7px;margin:9px 0 10px;color:#71868e;font-size:10px;line-height:1.5}
 .contact-consent input{flex:none;margin:2px 0 0;accent-color:#2e8bc2}
+
+
+/* Consultation page follows the supplied sixth-page layout. */
+.consult-hero{height:375px;background:linear-gradient(115deg,#f8fbfc 0%,#f6fafb 52%,#eaf3f6 100%);border-bottom:1px solid #e7eff2}
+.consult-hero-inner{height:100%;display:flex;flex-direction:column;justify-content:center;align-items:flex-start}
+.consult-hero .breadcrumb{margin-bottom:26px}
+.consult-hero-title{font-size:clamp(38px,3.5vw,53px);font-weight:800;line-height:1.3;letter-spacing:-.065em;margin:0 0 24px}
+.consult-hero p{font-size:14px;line-height:1.8;color:#718992;margin:0}
+.consult-section{background:linear-gradient(180deg,#fff 0%,#fff 58%,#f6fafb 100%);padding:36px 0 100px}
+.consult-intro .section-description{margin-bottom:44px}
+.consult-layout{display:grid;grid-template-columns:minmax(0,1fr) 310px;align-items:start;gap:24px}
+.consult-form,.consult-aside{background:#fff;border:1px solid #dce8ec;border-radius:13px;box-shadow:0 14px 28px #102b340b}
+.consult-form{padding:42px 44px}
+.consult-block+.consult-block{border-top:1px solid #e4ecef;margin-top:37px;padding-top:36px}
+.consult-block-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.consult-block-heading h3{font-size:21px;letter-spacing:-.05em;margin:0}
+.consult-block-heading h3 span{font-size:11px;letter-spacing:.1em;color:#8ca7b1;margin-right:12px}
+.consult-block-heading small{font-size:11px;color:#95a9b1}
+.consult-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.consult-field{display:flex;flex-direction:column;gap:8px;font-size:13px;font-weight:700;color:#35525c}
+.consult-field b,.consult-fieldset b{font-size:12px;color:#1e7da9}
+.consult-field em{font-style:normal;font-weight:400;color:#9aadb4;margin-left:5px}
+.consult-field input:not([type=file]),.consult-field textarea{width:100%;border:1px solid #d6e2e7;border-radius:5px;padding:14px 15px;font-size:13px;color:var(--ink);background:#fff;outline:none}
+.consult-field input:not([type=file]){height:50px}
+.consult-field textarea{min-height:145px;resize:vertical;line-height:1.6}
+.consult-field input:focus,.consult-field textarea:focus{border-color:#277fad;box-shadow:0 0 0 3px #277fad1c}
+.consult-field input::placeholder,.consult-field textarea::placeholder{color:#a5b5bb}
+.consult-fieldset{border:0;padding:0;margin:0 0 24px;min-width:0}
+.consult-fieldset legend{font-size:13px;font-weight:700;color:#35525c;margin-bottom:10px;padding:0}
+.consult-options{display:grid;gap:8px}
+.consult-category{grid-template-columns:repeat(3,minmax(0,1fr))}
+.consult-stage{grid-template-columns:repeat(4,minmax(0,1fr))}
+.consult-option{position:relative;cursor:pointer}
+.consult-option input{position:absolute;opacity:0;inset:0;width:100%;height:100%;cursor:pointer}
+.consult-option span{display:flex;align-items:center;gap:8px;min-height:48px;border:1px solid #d8e4e8;border-radius:5px;padding:10px 12px;font-size:12px;font-weight:600;color:#6c8790}
+.consult-option span::before{content:'';width:14px;height:14px;flex:none;border:1px solid #b9ccd4;border-radius:50%;background:#fff}
+.consult-option input:checked+span{border-color:#8ebacb;background:#eaf3f6;color:#2f5b6a}
+.consult-option input:checked+span::before{border:4px solid #247eab}
+.consult-option input:focus-visible+span{outline:3px solid #2e91c5;outline-offset:2px}
+.consult-message{margin-top:4px}
+.consult-help{font-size:11px;color:#9baeb5;margin:9px 0 20px}
+.consult-upload-field{gap:9px}
+.consult-upload{min-height:94px;border:1px dashed #afd0dc;background:#f8fbfc;border-radius:6px;display:flex;align-items:center;gap:16px;padding:17px 20px;cursor:pointer}
+.consult-upload-field:focus-within .consult-upload{outline:3px solid #2e91c5;outline-offset:3px}
+.consult-upload-plus{display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:50%;background:#e6f1f5;color:#80a7b5;font-size:24px;font-weight:300}
+.consult-upload-copy{display:grid;gap:5px;flex:1}
+.consult-upload-copy strong{font-size:12px;color:#466774}
+.consult-upload-copy small{font-size:10px;color:#9aadb5;word-break:break-all}
+.consult-file-button{border:1px solid #d1e0e5;border-radius:5px;background:#fff;padding:10px 13px;font-size:11px;color:#607c87;white-space:nowrap}
+.consult-error{font-size:11px;color:#a13737;margin:0}
+.consult-final{border-top:1px solid #e4ecef;margin-top:34px;padding-top:30px}
+.consult-privacy{padding:18px 20px;background:#f5f9fa;border:1px solid #e1eaed;border-radius:6px}
+.consult-privacy strong{display:block;font-size:12px;color:#47626d;margin-bottom:5px}
+.consult-privacy p{font-size:11px;color:#8ba0a8;line-height:1.65;margin:0}
+.consult-consent{display:flex;gap:9px;align-items:center;font-size:12px;font-weight:700;color:#42606c;margin:15px 0 29px;cursor:pointer}
+.consult-consent input{accent-color:#1d5d71}
+.consult-consent b{color:#2c7ca5;margin-left:8px}
+.consult-submit-row{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.consult-submit-row p{font-size:11px;color:#9aadb5;margin:0}
+.consult-submit-row .btn{font-size:12px;padding:12px 23px}
+.consult-aside{padding:31px 27px;position:sticky;top:24px}
+.consult-aside-kicker{font-size:10px;font-weight:800;letter-spacing:.16em;color:#8da8b2}
+.consult-aside h3{font-size:20px;margin:11px 0 15px;letter-spacing:-.045em}
+.consult-aside p{font-size:12px;line-height:1.7;color:#91a6ad;margin:0}
+.consult-aside-divider{border-top:1px solid #e3ebee;margin:24px 0}
+.consult-aside>strong{font-size:12px;color:#43606a}
+.consult-aside ol{list-style:none;padding:0;margin:16px 0 22px;display:grid;gap:19px}
+.consult-aside li{display:flex;gap:11px;align-items:flex-start}
+.consult-aside li>span{display:grid;place-items:center;flex:none;width:23px;height:23px;border-radius:50%;background:#e9f3f6;color:#7295a1;font-weight:800;font-size:10px}
+.consult-aside li b{display:block;font-size:12px;color:#47616b}
+.consult-aside li small{display:block;font-size:10px;line-height:1.5;color:#9baeb4;margin-top:4px}
+.consult-aside-note{display:grid;gap:7px;background:#f1f7f9;border-radius:5px;padding:18px}
+.consult-aside-note strong{font-size:11px;color:#507281}
+.consult-aside-note small{font-size:10px;line-height:1.65;color:#9aadb5}
+@media(max-width:950px){.consult-layout{grid-template-columns:minmax(0,1fr) 260px}.consult-form{padding:34px}.consult-category{grid-template-columns:repeat(2,minmax(0,1fr))}.consult-stage{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.consult-hero{height:auto;min-height:320px}.consult-hero-inner{padding:45px 0}.consult-hero-title{font-size:39px}.consult-section{padding:48px 0 72px}.consult-layout{grid-template-columns:1fr}.consult-aside{position:static}.consult-intro .section-description{margin-bottom:26px}}
+@media(max-width:520px){.consult-hero-title{font-size:34px}.consult-hero p{font-size:12px}.consult-form{padding:25px 18px}.consult-fields{grid-template-columns:1fr;gap:17px}.consult-category,.consult-stage{grid-template-columns:repeat(2,minmax(0,1fr))}.consult-option span{font-size:11px;min-height:44px;padding:8px}.consult-upload{flex-wrap:wrap}.consult-file-button{margin-left:56px}.consult-submit-row{align-items:stretch;flex-direction:column}.consult-submit-row .btn{width:100%}}

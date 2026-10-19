@@ -8,7 +8,7 @@ GitHub 저장소의 `main` 브랜치를 Cloudflare Pages에 연결합니다. Fra
 
 ## 상담 이메일
 
-상담 폼은 [FormSubmit](https://formsubmit.co/documentation)에 POST로 전송합니다. 첫 신청 후 `vonpat450@gmail.com`에 도착하는 인증 메일의 링크를 한 번 승인해야 실제 상담 메일이 전달됩니다. 배포 후 테스트 신청을 보내고 수신 여부를 확인하세요.
+상단과 본문의 상담 버튼은 `contact.html`로 이동합니다. 각 페이지 하단의 간단 입력폼은 이름, 연락처, 이메일, 진행 단계를 같은 탭의 브라우저 저장소에 잠시 보관하고 상담 페이지의 해당 칸에 채웁니다. 주소에는 개인정보를 넣지 않습니다. 상담 페이지에서 선택 문의 내용과 자료를 더한 뒤 개인정보 동의를 하고 최종 제출하면 [FormSubmit](https://formsubmit.co/documentation)을 통해 `vonpat450@gmail.com`으로 전송합니다. 첨부는 PDF/JPG/PNG/DOC/DOCX 파일 1개, 10MB 이하입니다. FormSubmit 메일 주소 활성화와 기본 폼의 메일 수신은 이미 확인했습니다.
 
 ## 보류 중인 작업
 
