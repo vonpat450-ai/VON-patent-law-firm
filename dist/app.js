@@ -5,7 +5,7 @@ const nav = [
   ['overseas','해외특허등록','overseas.html'],
   ['knowledge','특허지식','knowledge.html']
 ];
-const image = {process:'process-hero.png',priority:'priority-hero.png',overseas:'overseas-globe.svg',knowledge:'knowledge-hero.png'};
+const image = {process:'process-hero.png',priority:'priority-hero.png',overseas:'overseas-hero.png',knowledge:'knowledge-hero.png'};
 const processSteps = [
   ['발명 상담','아이디어 이해'],['선행기술 검토','선행기술 조사'],['명세서 작성 및 출원','권리범위 설계'],
   ['심사청구','서류 제출'],['의견서·보정서 대응','심사 대응'],['등록','권리 확보']

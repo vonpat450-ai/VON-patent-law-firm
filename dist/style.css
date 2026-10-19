@@ -214,9 +214,9 @@ html,body,button,input,select,textarea{font-family:'Pretendard','Malgun Gothic',
 
 /* Overseas patent registration page */
 .hero-overseas{background:#f3f9fa}
-.hero-overseas::before{background:linear-gradient(90deg,#f7fafb 0%,#f7fafb 28%,#e8f3f7 100%)}
-.hero.hero-overseas .hero-visual{inset:0;background-size:cover;background-position:center center;opacity:1;filter:none}
-.hero.hero-overseas .hero-visual::after{background:linear-gradient(90deg,#f7fafb 0%,#f7fafbe6 22%,#f7fafb8a 43%,transparent 62%)}
+.hero-overseas::before{background:linear-gradient(90deg,#f7fafb 0%,#f7fafb 32%,#f2f7f9 55%,#e8f3f7 100%)}
+.hero.hero-overseas .hero-visual{inset:0;background-size:auto 125%;background-position:right center;opacity:1;filter:none}
+.hero.hero-overseas .hero-visual::after{background:linear-gradient(90deg,#f6fafb 0%,#f6fafb 40%,#f6fafbf5 48%,#f6fafba6 58%,#f6fafb2e 68%,transparent 76%)}
 .overseas-comparison{padding:78px 0 72px}
 .overseas-comparison .section-description,.overseas-situations .section-description{margin-bottom:35px}
 .overseas-table-wrap{border:1px solid #dce7eb;border-radius:12px;overflow:hidden;box-shadow:0 12px 30px #102b3409;background:#fff}
@@ -267,5 +267,5 @@ html,body,button,input,select,textarea{font-family:'Pretendard','Malgun Gothic',
 .overseas-timeline-caveat{font-size:10px;color:#91aab2;line-height:1.55;margin:0}
 .overseas-timeline-caveat a{text-decoration:underline;text-underline-offset:2px;color:#bdd5db}
 @media(max-width:950px){.overseas-cards{gap:13px}.overseas-card{padding:22px 19px}.overseas-card h3{font-size:19px}.overseas-timing .container{gap:35px}.overseas-timeline{padding:18px}}
-@media(max-width:760px){.hero.hero-overseas .hero-visual{inset:47% 0 0 0!important;background-size:auto 390px;background-position:72% center!important}.hero.hero-overseas .hero-visual::after{background:linear-gradient(180deg,#f7fafb 0%,#f7fafb12 33%,transparent 80%)}.overseas-table-wrap{overflow-x:auto}.overseas-table{min-width:750px}.overseas-cards{grid-template-columns:1fr}.overseas-card{min-height:210px}.overseas-timing .container{grid-template-columns:1fr}.overseas-timing{padding:70px 0}.overseas-timing .section-description{max-width:600px}}
-@media(max-width:520px){.hero.hero-overseas .hero-visual{inset:55% 0 0 0!important;background-size:auto 310px;background-position:68% center!important}.overseas-comparison,.overseas-situations{padding:60px 0}.overseas-table{min-width:700px}.overseas-timeline-row{grid-template-columns:1fr;gap:14px}.overseas-milestones{gap:8px}.overseas-milestones b{font-size:10px}.overseas-milestones small{font-size:9px}.overseas-timeline-head{align-items:flex-start;flex-direction:column}.overseas-timing .section-title{font-size:28px}}
+@media(max-width:760px){.hero.hero-overseas .hero-visual{inset:48% 0 0 0!important;background-size:auto 110%;background-position:right center!important}.hero.hero-overseas .hero-visual::after{background:linear-gradient(90deg,#f6fafb 0%,#f6fafbe6 24%,#f6fafb70 46%,transparent 72%)}.overseas-table-wrap{overflow-x:auto}.overseas-table{min-width:750px}.overseas-cards{grid-template-columns:1fr}.overseas-card{min-height:210px}.overseas-timing .container{grid-template-columns:1fr}.overseas-timing{padding:70px 0}.overseas-timing .section-description{max-width:600px}}
+@media(max-width:520px){.hero.hero-overseas .hero-visual{inset:55% 0 0 0!important;background-size:auto 105%;background-position:right center!important}.overseas-comparison,.overseas-situations{padding:60px 0}.overseas-table{min-width:700px}.overseas-timeline-row{grid-template-columns:1fr;gap:14px}.overseas-milestones{gap:8px}.overseas-milestones b{font-size:10px}.overseas-milestones small{font-size:9px}.overseas-timeline-head{align-items:flex-start;flex-direction:column}.overseas-timing .section-title{font-size:28px}}
