@@ -14,7 +14,8 @@ vm.runInContext(source.slice(0, source.indexOf('const views =')), render);
 const fullPage = render.header() + render.consultationPage() + render.footer();
 assert.match(fullPage, /href="contact\.html"/);
 assert.match(fullPage, /id="consult-form"[^>]*action="https:\/\/formsubmit\.co\/vonpat450@gmail\.com"[^>]*method="POST"[^>]*enctype="multipart\/form-data"/);
-for (const field of ['name', 'phone', 'email', 'category', 'stage', 'message', 'attachment', 'privacy_consent']) {
+assert.match(fullPage, /name="jurisdiction" value="국내" required/);
+for (const field of ['name', 'phone', 'email', 'jurisdiction', 'country', 'category', 'stage', 'message', 'attachment', 'privacy_consent']) {
   assert.ok(fullPage.includes(`name="${field}"`), `${field} is missing`);
 }
 for (const view of [render.home, render.process, render.priority, render.search, render.knowledgePage]) {
@@ -43,12 +44,20 @@ assert.equal(window.destination, 'contact.html');
 assert.equal(JSON.parse(saved.get('von-consultation-lead')).stage, '출원 준비');
 
 const stageInputs = ['아이디어 단계', '출원 준비', '심사 대응', '기타'].map(value => ({value, checked: false}));
+const regionInputs = ['국내', '해외'].map(value => ({value, checked: false, addEventListener(event, callback) { this.onChange = callback; }}));
 const elements = {name: {value: ''}, phone: {value: ''}, email: {value: ''}};
-const form = {elements, querySelectorAll: () => stageInputs, addEventListener() {}};
+const form = {
+  elements,
+  querySelectorAll: selector => selector.includes('jurisdiction') ? regionInputs : stageInputs,
+  querySelector: () => regionInputs.find(input => input.checked),
+  addEventListener() {}
+};
+const countryWrap = {hidden: true};
+const countryInput = {disabled: true, required: false, value: ''};
 const attachment = {files: [], value: '', addEventListener(event, callback) { this.onChange = callback; }};
 const status = {textContent: ''};
 const error = {hidden: true, textContent: ''};
-const controls = {'consult-form': form, 'consult-attachment': attachment, 'attachment-status': status, 'attachment-error': error};
+const controls = {'consult-form': form, 'consult-country-wrap': countryWrap, 'consult-country': countryInput, 'consult-attachment': attachment, 'attachment-status': status, 'attachment-error': error};
 const full = {
   document: {getElementById: id => controls[id]},
   sessionStorage: {getItem: key => saved.get(key), removeItem: key => saved.delete(key)},
@@ -62,6 +71,23 @@ assert.equal(elements.email.value, 'test@example.com');
 assert.equal(stageInputs.find(input => input.checked).value, '출원 준비');
 assert.equal(window.name, '');
 assert.equal(saved.has('von-consultation-lead'), false);
+assert.equal(countryWrap.hidden, true);
+assert.equal(countryInput.disabled, true);
+regionInputs[0].checked = true;
+regionInputs[0].onChange();
+assert.equal(countryWrap.hidden, true);
+regionInputs[0].checked = false;
+regionInputs[1].checked = true;
+regionInputs[1].onChange();
+assert.equal(countryWrap.hidden, false);
+assert.equal(countryInput.disabled, false);
+assert.equal(countryInput.required, true);
+countryInput.value = '일본';
+regionInputs[1].checked = false;
+regionInputs[0].checked = true;
+regionInputs[0].onChange();
+assert.equal(countryWrap.hidden, true);
+assert.equal(countryInput.value, '');
 
 attachment.files = [{name: 'too-large.pdf', size: 11 * 1024 * 1024}];
 attachment.onChange();
