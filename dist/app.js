@@ -38,7 +38,7 @@ function heroVisual(kind){
   return `<div class="hero-visual" style="background-image:url('assets/${image[kind]}')" aria-hidden="true"></div>`;
 }
 function hero(title,description,kind='home',eyebrow='',secondary=''){return `<section class="hero hero-${kind} ${kind==='home'?'hero-home':''}" style="--hero-size:${kind==='home'?'1500px auto':'1380px auto'};--hero-position:right ${kind==='home'?'-42px':'-38px'}">${heroVisual(kind)}<div class="container hero-inner"><div class="hero-copy">${kind==='home'?`<div class="hero-eyebrow">${eyebrow}</div>`:`<div class="breadcrumb"><a href="index.html">⌂</a><span>›</span><span>${nav.find(x=>x[0]===kind)?.[1]}</span></div>`}<h1 class="hero-title"><span class="hero-title-echo" aria-hidden="true">${title}</span><span class="hero-title-foreground">${title}</span></h1><p class="hero-description"><span class="hero-description-echo" aria-hidden="true">${description}</span><span class="hero-description-foreground">${description}</span></p><div class="hero-buttons"><a class="btn btn-primary" href="contact.html">상담 신청 <span aria-hidden="true">→</span></a>${secondary?`<a class="btn btn-outline" href="${secondary}">내 아이디어, 특허가 될까? <span aria-hidden="true">→</span></a>`:''}</div>${kind==='home'?`<div class="hero-stats"><div><strong>5,500+</strong><small>누적 출원 건수</small></div><div><strong>92%</strong><small>등록 성공률</small></div><div><strong>12년+</strong><small>평균 경력의 변리사</small></div></div>`:''}</div></div></section>`}
-function contact(title='지금, 아이디어를 이야기해 주세요.',description='간단한 정보만으로도, 변리사가 직접 검토해 드립니다.',pale=false){return `<section class="contact-section ${pale?'pale':''}" id="contact"><div class="container contact-grid"><div><h2 class="section-title">${title}</h2><p class="section-description">${description}</p></div><form class="contact-card" id="contact-quick-form"><div class="contact-fields"><label><span class="sr-only">이름</span><input name="name" type="text" placeholder="이름 (필수)" autocomplete="name" required></label><label><span class="sr-only">연락처</span><input name="phone" type="tel" placeholder="연락처 (필수)" autocomplete="tel" required></label><label><span class="sr-only">이메일</span><input name="email" type="email" placeholder="이메일 (필수)" autocomplete="email" required></label></div><div class="contact-radio"><strong>현재 진행 단계</strong><label><input type="radio" name="stage" value="아이디어 단계" checked> 아이디어 단계</label><label><input type="radio" name="stage" value="출원 준비"> 출원 준비</label><label><input type="radio" name="stage" value="심사 대응"> 심사 대응</label><label><input type="radio" name="stage" value="기타"> 기타</label></div><button class="btn btn-primary form-submit" type="submit">상담 신청하기 <span aria-hidden="true">→</span></button><p class="form-note">다음 페이지에서 국내·해외와 문의 내용, 자료를 확인한 뒤 최종 신청합니다.</p></form></div></section>`}
+function contact(title='지금, 아이디어를 이야기해 주세요.',description='간단한 정보만으로도, 변리사가 직접 검토해 드립니다.',pale=false){return `<section class="contact-section ${pale?'pale':''}" id="contact"><div class="container contact-grid"><div><h2 class="section-title">${title}</h2><p class="section-description">${description}</p></div><form class="contact-card" id="contact-quick-form" novalidate><div class="contact-fields"><label><span class="sr-only">이름</span><input name="name" type="text" placeholder="이름 (필수)" autocomplete="name" required></label><label><span class="sr-only">연락처</span><input name="phone" type="tel" inputmode="numeric" maxlength="13" placeholder="010-0000-0000 (필수)" autocomplete="tel" required></label><label><span class="sr-only">이메일</span><input name="email" type="email" placeholder="이메일 (필수)" autocomplete="email" required></label></div><div class="contact-radio"><strong>현재 진행 단계</strong><label><input type="radio" name="stage" value="아이디어 단계" checked> 아이디어 단계</label><label><input type="radio" name="stage" value="출원 준비"> 출원 준비</label><label><input type="radio" name="stage" value="심사 대응"> 심사 대응</label><label><input type="radio" name="stage" value="기타"> 기타</label></div><button class="btn btn-primary form-submit" type="submit">상담 신청하기 <span aria-hidden="true">→</span></button><p class="form-note">다음 페이지에서 국내·해외와 문의 내용, 자료를 확인한 뒤 최종 신청합니다.</p></form></div></section>`}
 function footer(){return `<footer class="site-footer"><div class="container footer-grid"><div><a href="index.html" class="logo" aria-label="특허법인 본 홈"><img class="brand-logo" src="assets/von-standard-logo.png" alt="특허법인 본"></a><div class="footer-info"><div>개인정보처리방침&nbsp;&nbsp; | &nbsp;&nbsp;이용약관</div><div>서울 강남구 테헤란로70길 14-8 세왕개발빌딩 8층&nbsp; | &nbsp;02-6494-0524&nbsp; | &nbsp;<a href="mailto:vonpat450@gmail.com">vonpat450@gmail.com</a></div><div>© 2024 VON PATENT. All rights reserved.</div></div></div><a class="btn" href="contact.html">상담 신청하기 <span aria-hidden="true">→</span></a><div class="footer-side">더 선명한 세상이<br>당신의 기술로부터.</div></div></footer>`}
 function articleCards(items,offset=0){return `<div class="article-grid">${items.map((a,i)=>`<article class="article-card"><button type="button" class="article-open" data-index="${offset+i}" aria-label="${a[0]} 읽기"><div class="article-art ${(i+offset)%3===1?'circle':''}" aria-hidden="true"></div><div class="article-copy"><strong>${a[0]}</strong><p>${a[1]}</p></div></button></article>`).join('')}</div>`}
 function home(){return `${hero('기술을 더 선명하게,<br>특허를 더 강력하게','아이디어의 가능성을 정확히 분석하고,<br>권리의 범위를 설계합니다.<br>당신의 기술이 더 멀리, 더 안전하게 나아갈 수 있도록<br>특허의 해상도를 높입니다.','home','호칭뿐인 아이디어가,<br>선명한 권리가 되는 순간','process.html')}<section class="section"><div class="container split"><div><h2 class="section-title">복잡한 특허,<br>이제 선명해집니다.</h2><p class="section-description">막연한 아이디어도, 구체적인 기술도<br>체계적인 분석을 통해 명확한 권리로 만들어드립니다.</p></div><div class="process-strip">${[['발명 상담','아이디어 이해'],['기술 분석','선행기술 조사'],['명세서 작성','권리범위 설계'],['특허출원','서류 제출'],['심사 및 등록','권리 확보']].map((x,i)=>`<div class="process-item"><span class="process-num">0${i+1}</span><strong>${x[0]}</strong><small>${x[1]}</small></div>`).join('')}</div></div></section><section class="section dark-feature dark-home"><div class="container"><div style="max-width:580px"><span style="font-size:11px;letter-spacing:.15em;color:#91b1bb;font-weight:700">WHY VON PATENT</span><h2 class="section-title" style="margin-top:14px">보이는 기술을 넘어,<br>지켜지는 권리로.</h2><p class="section-description">단순한 서류 작성이 아닌,<br>기술의 본질을 이해하고 권리의 해상도를 높입니다.<br>시작부터 다른, 특허의 결과를 경험하세요.</p><div class="hero-stats"><div><strong>5,500+</strong><small>누적 출원 건수</small></div><div><strong>92%</strong><small>등록 성공률</small></div><div><strong>12년+</strong><small>평균 경력의 변리사</small></div></div></div></div></section>${contact()}<section class="section section-soft"><div class="container"><div class="section-topline"><div><h2 class="section-title">지식이 자산이 되는 이야기</h2><p class="section-description">특허, 더 깊이 이해할 수 있는 콘텐츠를 만나보세요.</p></div><a class="text-link" href="knowledge.html">전체 보기 →</a></div>${articleCards([knowledge[3],knowledge[1],knowledge[2]],[3,1,2][0])}</div></section><section class="section"><div class="container"><div class="section-topline"><h2 class="section-title">자주 묻는 질문</h2><a class="text-link" href="knowledge.html">전체 보기 →</a></div><div class="faq"><details><summary>Q. 아이디어만 있어도 상담이 가능한가요?</summary><p>네. 아이디어의 핵심 기능과 해결하려는 문제를 알려주시면 다음에 준비할 자료와 검토 방향을 함께 살펴볼 수 있습니다.</p></details><details><summary>Q. 특허출원 비용은 얼마나 드나요?</summary><p>기술 분야, 출원 범위, 도면 및 자료 준비 상태에 따라 달라집니다. 내용을 확인한 뒤 필요한 절차와 비용을 안내해 드립니다.</p></details><details><summary>Q. 출원부터 등록까지 얼마나 걸리나요?</summary><p>심사청구 시점과 심사 상황, 의견제출 여부에 따라 달라집니다. 일정이 중요한 경우 우선심사 가능성도 함께 검토할 수 있습니다.</p></details></div></div></section>`}
@@ -85,7 +85,18 @@ function overseas(){
     ${contact('현재 상황에 맞는<br>해외출원 경로를 살펴보세요.','진출 국가가 아직 정해지지 않아도 괜찮습니다.<br>지금까지의 출원 상황을 알려주시면 함께 정리하겠습니다.',true)}`;
 }
 function knowledgePage(){return `${hero('특허를 알면,<br>다음 선택이 선명해집니다.','출원 시작부터 심사 대응까지,<br>기술을 지키는 데 필요한 이야기를 전합니다.','knowledge')}<section class="section"><div class="container"><h2 class="section-title">지금 읽어볼 특허 이야기</h2><p class="section-description">출원 준비부터 심사와 권리 활용까지, 필요한 이야기를 살펴보세요.</p><p class="result-label" id="article-count">전체 9개 칼럼</p><div id="knowledge-list">${articleCards(knowledge)}</div><div class="pagination" aria-label="칼럼 페이지"><button type="button" class="active" data-article-page="1" aria-current="page">1</button><button type="button" data-article-page="2">2</button></div></div></section>${contact('지금, 궁금한 기술을<br>이야기해 주세요.','어떤 단계에 있는지 알려주시면 함께 검토할 내용을 정리해 드립니다.',true)}<dialog class="modal" id="article-modal" aria-labelledby="modal-title"><button class="modal-close" type="button" aria-label="닫기">×</button><small class="modal-kicker">VON PATENT · 특허지식</small><h2 id="modal-title"></h2><p id="modal-body"></p><a class="btn btn-primary" href="contact.html">상담 신청 →</a></dialog>`}
-function consultationPage(){return `<section class="consult-hero"><div class="container consult-hero-inner"><div class="breadcrumb"><a href="index.html">⌂</a><span>›</span><span>상담 신청</span></div><h1 class="consult-hero-title">기술의 현재 상황을<br>들려주세요.</h1><p>아이디어 단계부터 심사 대응까지, 지금 필요한 내용을 함께 살펴보겠습니다.<br>기본 정보만 남겨도 신청할 수 있습니다.</p></div></section><section class="consult-section"><div class="container"><div class="consult-intro"><h2 class="section-title">상담 신청</h2><p class="section-description">필수 정보만 입력해도 신청할 수 있습니다. 문의 내용과 자료는 필요하다면 추가해 주세요.</p></div><div class="consult-layout"><form class="consult-form" id="consult-form" action="https://formsubmit.co/vonpat450@gmail.com" method="POST" enctype="multipart/form-data"><input type="hidden" name="_subject" value="[특허법인 본] 홈페이지 상담 신청"><input type="hidden" name="_template" value="table"><input type="hidden" name="_url" value="https://von-patent-law-firm.pages.dev/contact.html"><div class="form-honey" aria-hidden="true"><label>비워 두세요 <input type="text" name="_honey" tabindex="-1" autocomplete="off"></label></div><div class="consult-block"><div class="consult-block-heading"><h3><span>01</span> 신청자 정보</h3><small>* 필수 입력</small></div><div class="consult-fields"><label class="consult-field"><span>이름 <b>*</b></span><input name="name" type="text" placeholder="이름을 입력해 주세요" autocomplete="name" required></label><label class="consult-field"><span>연락처 <b>*</b></span><input name="phone" type="tel" placeholder="연락 가능한 번호를 입력해 주세요" autocomplete="tel" required></label><label class="consult-field"><span>이메일 <b>*</b></span><input name="email" type="email" placeholder="이메일 주소를 입력해 주세요" autocomplete="email" required></label></div></div><div class="consult-block consult-details"><div class="consult-block-heading"><h3><span>02</span> 상담 내용</h3></div><fieldset class="consult-fieldset"><legend>출원 대상 <b>*</b></legend><div class="consult-options consult-region"><label class="consult-option"><input type="radio" name="jurisdiction" value="국내" required><span>국내 특허</span></label><label class="consult-option"><input type="radio" name="jurisdiction" value="해외"><span>해외 특허</span></label></div><label class="consult-field consult-country" id="consult-country-wrap" for="consult-country" hidden><span>해외 국가명 <b>*</b></span><input id="consult-country" name="country" type="text" placeholder="예: 미국, 일본" autocomplete="off" disabled></label><p class="consult-region-help">해외 여러 국가를 검토 중이라면 쉼표로 구분해 적어 주세요.</p></fieldset><fieldset class="consult-fieldset"><legend>상담 분야 <b>*</b></legend><div class="consult-options consult-category">${['특허출원·등록','우선심사','특허검색·선행기술','심사 대응','기타'].map((label,i)=>`<label class="consult-option"><input type="radio" name="category" value="${label}" ${i===0?'checked':''}><span>${label}</span></label>`).join('')}</div></fieldset><fieldset class="consult-fieldset"><legend>현재 진행 단계 <b>*</b></legend><div class="consult-options consult-stage">${['아이디어 단계','출원 준비','심사 대응','기타'].map((label,i)=>`<label class="consult-option"><input type="radio" name="stage" value="${label}" ${i===0?'checked':''}><span>${label}</span></label>`).join('')}</div></fieldset><label class="consult-field consult-message"><span>문의 내용 <em>선택</em></span><textarea name="message" rows="6" placeholder="현재 단계나 궁금한 점을 간단히 적어 주세요.&#10;예) 발명 아이디어가 있는데 특허출원을 어디서부터 시작해야 할지 궁금합니다."></textarea></label><p class="consult-help">공개 전 기술의 핵심 내용은 상담 중에 전달하셔도 됩니다.</p><div class="consult-field consult-upload-field"><span>자료 첨부 <em>선택</em></span><label class="consult-upload" for="consult-attachment"><span class="consult-upload-plus" aria-hidden="true">＋</span><span class="consult-upload-copy"><strong>상담에 도움이 되는 자료가 있다면 첨부해 주세요.</strong><small id="attachment-status" aria-live="polite">PDF, JPG, PNG, DOC, DOCX · 파일 1개, 10MB 이하</small></span><span class="consult-file-button">파일 선택</span></label><input class="sr-only" type="file" id="consult-attachment" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"><p id="attachment-error" class="consult-error" role="alert" hidden></p></div></div><div class="consult-final"><div class="consult-privacy"><strong>개인정보 수집·이용 안내</strong><p>상담 접수와 회신을 위해 이름, 연락처, 이메일, 출원 대상, 해외 국가명(해외 선택 시), 상담 분야, 진행 단계와 입력하신 문의 내용 및 첨부 자료를 이용합니다. 정보는 FormSubmit을 통해 이메일로 전달됩니다.</p></div><label class="consult-consent"><input type="checkbox" name="privacy_consent" value="동의" required><span>개인정보 수집·이용에 동의합니다. <b>(필수)</b></span></label><div class="consult-submit-row"><p>입력하신 내용은 상담 접수를 위해 전달됩니다.</p><button class="btn btn-primary" type="submit">상담 신청하기 <span aria-hidden="true">→</span></button></div></div></form><aside class="consult-aside"><span class="consult-aside-kicker">BEFORE YOU SEND</span><h3>어떻게 진행되나요?</h3><p>작성하신 상황을 확인한 뒤, 필요한 상담 방향을 안내해 드립니다.</p><div class="consult-aside-divider"></div><strong>상담 진행 순서</strong><ol><li><span>01</span><div><b>신청 접수</b><small>기본 정보와 상담 분야를 전해 주세요.</small></div></li><li><span>02</span><div><b>내용 확인</b><small>문의에 맞는 담당자가 내용을 살펴봅니다.</small></div></li><li><span>03</span><div><b>연락 및 안내</b><small>입력하신 연락처로 다음 단계를 안내합니다.</small></div></li></ol><div class="consult-aside-note"><strong>자료가 아직 없어도 괜찮습니다.</strong><small>아이디어를 정리해 메모나 현재 진행 상황만으로도 상담을 신청할 수 있습니다.</small></div></aside></div></div></section>`}
+function consultationPage(){return `<section class="consult-hero"><div class="container consult-hero-inner"><div class="breadcrumb"><a href="index.html">⌂</a><span>›</span><span>상담 신청</span></div><h1 class="consult-hero-title">기술의 현재 상황을<br>들려주세요.</h1><p>아이디어 단계부터 심사 대응까지, 지금 필요한 내용을 함께 살펴보겠습니다.<br>기본 정보만 남겨도 신청할 수 있습니다.</p></div></section>
+<section class="consult-section"><div class="container"><div class="consult-intro"><h2 class="section-title">상담 신청</h2><p class="section-description">필수 정보만 입력해도 신청할 수 있습니다. 문의 내용과 자료는 필요하다면 추가해 주세요.</p></div><div class="consult-layout">
+<form class="consult-form" id="consult-form" action="https://formsubmit.co/vonpat450@gmail.com" method="POST" enctype="multipart/form-data" novalidate>
+<input type="hidden" name="_subject" value="[특허법인 본] 홈페이지 상담 신청"><input type="hidden" name="_template" value="table"><input type="hidden" name="_url" value="https://von-patent-law-firm.pages.dev/contact.html"><input type="hidden" name="_captcha" value="true"><div class="form-honey" aria-hidden="true"><label>비워 두세요 <input type="text" name="_honey" tabindex="-1" autocomplete="off"></label></div>
+<div class="consult-block"><div class="consult-block-heading"><h3><span>01</span> 신청자 정보</h3><small>* 필수 입력</small></div><div class="consult-fields"><label class="consult-field"><span>이름 <b>*</b></span><input name="name" type="text" placeholder="이름을 입력해 주세요" autocomplete="name" required></label><label class="consult-field"><span>연락처 <b>*</b></span><input name="phone" type="tel" inputmode="numeric" maxlength="13" placeholder="010-0000-0000" autocomplete="tel" required></label><label class="consult-field"><span>이메일 <b>*</b></span><input name="email" type="email" placeholder="이메일 주소를 입력해 주세요" autocomplete="email" required></label></div></div>
+<div class="consult-block consult-details"><div class="consult-block-heading"><h3><span>02</span> 상담 내용</h3></div>
+<fieldset class="consult-fieldset"><legend>출원 대상 <b>*</b></legend><div class="consult-options consult-region"><label class="consult-option"><input type="radio" name="jurisdiction" value="국내" required><span>국내 특허</span></label><label class="consult-option"><input type="radio" name="jurisdiction" value="해외"><span>해외 특허</span></label></div></fieldset>
+<div id="consult-domestic" class="consult-conditional" hidden><fieldset class="consult-fieldset" id="consult-category-fieldset" disabled><legend>상담 분야 <b>*</b></legend><div class="consult-options consult-category">${['특허신청','특허우선심사','의견제출통지서 대응','기타'].map((label,i)=>`<label class="consult-option"><input type="radio" name="category" value="${label}" ${i===0?'required':''}><span>${label}</span></label>`).join('')}</div></fieldset><fieldset class="consult-fieldset" id="consult-stage-fieldset" hidden disabled><legend>현재 진행 단계 <b>*</b></legend><div class="consult-options consult-stage">${['아이디어 단계','출원 준비','심사 대응','기타'].map((label,i)=>`<label class="consult-option"><input type="radio" name="stage" value="${label}" ${i===0?'required':''}><span>${label}</span></label>`).join('')}</div></fieldset></div>
+<div id="consult-overseas" class="consult-conditional" hidden><label class="consult-field consult-country" for="consult-country"><span>해외 국가명 <b>*</b></span><input id="consult-country" name="country" type="text" placeholder="예: 미국, 일본" autocomplete="off" disabled></label><p class="consult-region-help">해외 여러 국가를 검토 중이라면 쉼표로 구분해 적어 주세요.</p><label class="consult-field consult-country" for="consult-patent-number"><span>국내 출원·등록 특허번호 <em>선택</em></span><input id="consult-patent-number" name="domestic_patent_number" type="text" placeholder="국내 출원 중이거나 등록된 특허번호를 입력해 주세요" autocomplete="off" disabled></label></div>
+<label class="consult-field consult-message"><span>문의 내용 <em>선택</em></span><textarea name="message" rows="6" placeholder="현재 단계나 궁금한 점을 간단히 적어 주세요.&#10;예) 발명 아이디어가 있는데 특허출원을 어디서부터 시작해야 할지 궁금합니다."></textarea></label><p class="consult-help">공개 전 기술의 핵심 내용은 상담 중에 전달하셔도 됩니다.</p><div class="consult-field consult-upload-field"><span>자료 첨부 <em>선택</em></span><label class="consult-upload" for="consult-attachment"><span class="consult-upload-plus" aria-hidden="true">＋</span><span class="consult-upload-copy"><strong>상담에 도움이 되는 자료가 있다면 첨부해 주세요.</strong><small id="attachment-status" aria-live="polite">PDF, JPG, PNG, DOC, DOCX · 파일 1개, 10MB 이하</small></span><span class="consult-file-button">파일 선택</span></label><input class="sr-only" type="file" id="consult-attachment" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"><p id="attachment-error" class="consult-error" role="alert" hidden></p></div></div>
+<div class="consult-final"><div class="consult-privacy"><strong>개인정보 수집·이용 안내</strong><p>상담 접수와 회신을 위해 이름, 연락처, 이메일, 출원 대상, 선택하신 상담 정보와 입력하신 문의 내용 및 첨부 자료를 이용합니다. 정보는 FormSubmit을 통해 이메일로 전달됩니다.</p></div><label class="consult-consent"><input type="checkbox" name="privacy_consent" value="동의" required><span>개인정보 수집·이용에 동의합니다. <b>(필수)</b></span></label><div class="consult-submit-row"><p>입력하신 내용은 상담 접수를 위해 전달됩니다.</p><button class="btn btn-primary" type="submit">상담 신청하기 <span aria-hidden="true">→</span></button></div></div></form>
+<aside class="consult-aside"><span class="consult-aside-kicker">BEFORE YOU SEND</span><h3>어떻게 진행되나요?</h3><p>작성하신 상황을 확인한 뒤, 필요한 상담 방향을 안내해 드립니다.</p><div class="consult-aside-divider"></div><strong>상담 진행 순서</strong><ol><li><span>01</span><div><b>신청 접수</b><small>기본 정보와 출원 대상을 전해 주세요.</small></div></li><li><span>02</span><div><b>내용 확인</b><small>문의에 맞는 담당자가 내용을 살펴봅니다.</small></div></li><li><span>03</span><div><b>연락 및 안내</b><small>입력하신 연락처로 다음 단계를 안내합니다.</small></div></li></ol><div class="consult-aside-note"><strong>자료가 아직 없어도 괜찮습니다.</strong><small>아이디어를 정리한 메모나 현재 진행 상황만으로도 상담을 신청할 수 있습니다.</small></div></aside></div></div></section>`}
 const views = {home,process,priority,overseas,knowledge:knowledgePage,consultation:consultationPage};
 document.getElementById('app').innerHTML = header() + views[page]() + footer();
 const toggle = document.querySelector('.menu-toggle');
@@ -99,10 +110,47 @@ if(page==='home')document.querySelectorAll('.article-open').forEach(button=>butt
 
 
 
+function formatMobile(value) {
+  const digits = String(value || '').replace(/\D/g, '').slice(0, 11);
+  if (!digits.startsWith('010')) return digits;
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 7) return digits.slice(0, 3) + '-' + digits.slice(3);
+  return digits.slice(0, 3) + '-' + digits.slice(3, 7) + '-' + digits.slice(7);
+}
+function validMobile(value) { return /^010-\d{4}-\d{4}$/.test(formatMobile(value)); }
+function validEmail(value) {
+  const email = String(value || '').trim();
+  if (email.length > 254 || !/^[^\s@]+@[A-Za-z0-9.-]+$/.test(email)) return false;
+  const [local, domain] = email.split('@');
+  if (local.length > 64 || local.startsWith('.') || local.endsWith('.') || local.includes('..')) return false;
+  const labels = domain.split('.');
+  return labels.length >= 2 && labels.every(label => label.length > 0 && label.length <= 63 && /^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$/.test(label)) && /^[A-Za-z]{2,}$/.test(labels.at(-1));
+}
+function validateContactIdentity(form) {
+  const phone = form.elements.phone;
+  const email = form.elements.email;
+  phone.value = formatMobile(phone.value);
+  if (!validMobile(phone.value)) {
+    window.alert('신청 실패\n연락처는 휴대폰 번호로 입력해야 합니다.');
+    phone.focus();
+    return false;
+  }
+  if (!validEmail(email.value)) {
+    window.alert('신청 실패\n이메일 주소를 올바르게 입력해 주세요.');
+    email.focus();
+    return false;
+  }
+  return true;
+}
+document.querySelectorAll('input[name="phone"]').forEach(input => {
+  input.addEventListener('input', () => { input.value = formatMobile(input.value); });
+  input.value = formatMobile(input.value);
+});
+
 const quickForm = document.getElementById('contact-quick-form');
 quickForm?.addEventListener('submit', event => {
   event.preventDefault();
-  if (!quickForm.reportValidity()) return;
+  if (!validateContactIdentity(quickForm) || !quickForm.reportValidity()) return;
   const values = new FormData(quickForm);
   const lead = {name:String(values.get('name')||''),phone:String(values.get('phone')||''),email:String(values.get('email')||''),stage:String(values.get('stage')||'아이디어 단계')};
   const serialized = JSON.stringify(lead);
@@ -114,16 +162,32 @@ quickForm?.addEventListener('submit', event => {
 const consultationForm = document.getElementById('consult-form');
 if (consultationForm) {
   const regionInputs = consultationForm.querySelectorAll('input[name="jurisdiction"]');
-  const countryWrap = document.getElementById('consult-country-wrap');
+  const categoryInputs = consultationForm.querySelectorAll('input[name="category"]');
+  const domestic = document.getElementById('consult-domestic');
+  const overseasFields = document.getElementById('consult-overseas');
+  const categoryFieldset = document.getElementById('consult-category-fieldset');
+  const stageFieldset = document.getElementById('consult-stage-fieldset');
   const countryInput = document.getElementById('consult-country');
+  const patentNumberInput = document.getElementById('consult-patent-number');
+  function updateCategory() {
+    const ready = !domestic.hidden && Boolean(consultationForm.querySelector('input[name="category"]:checked'));
+    stageFieldset.hidden = !ready;
+    stageFieldset.disabled = !ready;
+  }
   function updateRegion() {
-    const overseas = consultationForm.querySelector('input[name="jurisdiction"]:checked')?.value === '해외';
-    countryWrap.hidden = !overseas;
-    countryInput.disabled = !overseas;
-    countryInput.required = overseas;
-    if (!overseas) countryInput.value = '';
+    const selected = consultationForm.querySelector('input[name="jurisdiction"]:checked')?.value;
+    const isDomestic = selected === '국내';
+    const isOverseas = selected === '해외';
+    domestic.hidden = !isDomestic;
+    categoryFieldset.disabled = !isDomestic;
+    overseasFields.hidden = !isOverseas;
+    countryInput.disabled = !isOverseas;
+    countryInput.required = isOverseas;
+    patentNumberInput.disabled = !isOverseas;
+    updateCategory();
   }
   regionInputs.forEach(input => input.addEventListener('change', updateRegion));
+  categoryInputs.forEach(input => input.addEventListener('change', updateCategory));
   updateRegion();
   let serialized = '';
   try { serialized = sessionStorage.getItem('von-consultation-lead') || ''; sessionStorage.removeItem('von-consultation-lead'); } catch (_) {}
@@ -132,7 +196,7 @@ if (consultationForm) {
   if (serialized) {
     try {
       const lead = JSON.parse(serialized);
-      for (const key of ['name','phone','email']) if (typeof lead[key] === 'string') consultationForm.elements[key].value = lead[key];
+      for (const key of ['name','phone','email']) if (typeof lead[key] === 'string') consultationForm.elements[key].value = key === 'phone' ? formatMobile(lead[key]) : lead[key];
       const stage = Array.from(consultationForm.querySelectorAll('input[name="stage"]')).find(input => input.value === lead.stage);
       if (stage) stage.checked = true;
     } catch (_) {}
@@ -154,8 +218,10 @@ if (consultationForm) {
     }
     return true;
   }
-  attachment.addEventListener('change',validateAttachment);
-  consultationForm.addEventListener('submit',event => {
+  attachment.addEventListener('change', validateAttachment);
+  consultationForm.addEventListener('submit', event => {
+    if (!validateContactIdentity(consultationForm)) { event.preventDefault(); return; }
+    if (!consultationForm.reportValidity()) { event.preventDefault(); return; }
     if (!validateAttachment()) { event.preventDefault(); attachment.focus(); }
   });
 }

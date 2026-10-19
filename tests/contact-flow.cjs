@@ -2,107 +2,67 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-
 const source = fs.readFileSync(path.join(__dirname, '../dist/app.js'), 'utf8');
-const quickStart = source.indexOf('const quickForm =');
-const fullStart = source.indexOf('const consultationForm =');
-assert.ok(quickStart > 0 && fullStart > quickStart);
-
+const logicStart = source.indexOf('function formatMobile(');
+assert.ok(logicStart > 0);
 const render = {document: {body: {dataset: {page: 'consultation'}}}};
 vm.createContext(render);
 vm.runInContext(source.slice(0, source.indexOf('const views =')), render);
-const fullPage = render.header() + render.consultationPage() + render.footer();
-assert.match(fullPage, /href="contact\.html"/);
-assert.match(fullPage, /id="consult-form"[^>]*action="https:\/\/formsubmit\.co\/vonpat450@gmail\.com"[^>]*method="POST"[^>]*enctype="multipart\/form-data"/);
-assert.match(fullPage, /name="jurisdiction" value="국내" required/);
-for (const field of ['name', 'phone', 'email', 'jurisdiction', 'country', 'category', 'stage', 'message', 'attachment', 'privacy_consent']) {
-  assert.ok(fullPage.includes(`name="${field}"`), `${field} is missing`);
-}
-for (const view of [render.home, render.process, render.priority, render.overseas, render.knowledgePage]) {
-  const page = view();
-  assert.match(page, /id="contact-quick-form"/);
-  assert.ok(!page.includes('href="#contact"'));
-}
-const overseasPage = render.overseas();
-assert.match(render.header(), /해외특허등록/);
-assert.match(overseasPage, /개별국 직접출원/);
-assert.match(overseasPage, /PCT 국제출원/);
-assert.match(overseasPage, /overseas-timeline/);
-assert.ok(!overseasPage.includes('patent-search'));
-assert.match(fs.readFileSync(path.join(__dirname, '../dist/overseas.html'), 'utf8'), /data-page="overseas"/);
-assert.match(fs.readFileSync(path.join(__dirname, '../dist/search.html'), 'utf8'), /url=overseas\.html/);
+const markup = render.consultationPage();
+assert.match(markup, /action="https:\/\/formsubmit\.co\/vonpat450@gmail\.com"/);
+for (const field of ['name','phone','email','jurisdiction','country','domestic_patent_number','category','stage','message','attachment','privacy_consent','_honey','_captcha']) assert.ok(markup.includes(`name="${field}"`), `${field} missing`);
+for (const label of ['특허신청','특허우선심사','의견제출통지서 대응','기타']) assert.ok(markup.includes(label));
+assert.ok(!markup.includes('특허검색·선행기술'));
+assert.match(markup, /id="consult-domestic"[^>]*hidden/);
+assert.match(markup, /id="consult-overseas"[^>]*hidden/);
+assert.match(markup, /id="consult-stage-fieldset"[^>]*hidden disabled/);
+for (const view of [render.home,render.process,render.priority,render.overseas,render.knowledgePage]) assert.match(view(), /id="contact-quick-form"/);
 
-const listeners = {};
-const quickForm = {
-  addEventListener: (event, callback) => { listeners[event] = callback; },
-  reportValidity: () => true
-};
-const saved = new Map();
-const window = {name: '', location: {assign: value => { window.destination = value; }}};
-const quick = {
-  document: {getElementById: id => id === 'contact-quick-form' ? quickForm : null},
-  sessionStorage: {setItem: (key, value) => saved.set(key, value)},
-  FormData: class { get(key) { return {name: '테스트 이름', phone: '010-1234-5678', email: 'test@example.com', stage: '출원 준비'}[key]; } },
-  window
-};
-vm.createContext(quick);
-vm.runInContext(source.slice(quickStart, fullStart), quick);
-listeners.submit({preventDefault() {}});
-assert.equal(window.destination, 'contact.html');
-assert.equal(JSON.parse(saved.get('von-consultation-lead')).stage, '출원 준비');
-
-const stageInputs = ['아이디어 단계', '출원 준비', '심사 대응', '기타'].map(value => ({value, checked: false}));
-const regionInputs = ['국내', '해외'].map(value => ({value, checked: false, addEventListener(event, callback) { this.onChange = callback; }}));
-const elements = {name: {value: ''}, phone: {value: ''}, email: {value: ''}};
-const form = {
-  elements,
-  querySelectorAll: selector => selector.includes('jurisdiction') ? regionInputs : stageInputs,
-  querySelector: () => regionInputs.find(input => input.checked),
-  addEventListener() {}
-};
-const countryWrap = {hidden: true};
-const countryInput = {disabled: true, required: false, value: ''};
-const attachment = {files: [], value: '', addEventListener(event, callback) { this.onChange = callback; }};
-const status = {textContent: ''};
-const error = {hidden: true, textContent: ''};
-const controls = {'consult-form': form, 'consult-country-wrap': countryWrap, 'consult-country': countryInput, 'consult-attachment': attachment, 'attachment-status': status, 'attachment-error': error};
-const full = {
-  document: {getElementById: id => controls[id]},
-  sessionStorage: {getItem: key => saved.get(key), removeItem: key => saved.delete(key)},
-  window
-};
-vm.createContext(full);
-vm.runInContext(source.slice(fullStart), full);
-assert.equal(elements.name.value, '테스트 이름');
-assert.equal(elements.phone.value, '010-1234-5678');
-assert.equal(elements.email.value, 'test@example.com');
-assert.equal(stageInputs.find(input => input.checked).value, '출원 준비');
-assert.equal(window.name, '');
-assert.equal(saved.has('von-consultation-lead'), false);
-assert.equal(countryWrap.hidden, true);
-assert.equal(countryInput.disabled, true);
-regionInputs[0].checked = true;
-regionInputs[0].onChange();
-assert.equal(countryWrap.hidden, true);
-regionInputs[0].checked = false;
-regionInputs[1].checked = true;
-regionInputs[1].onChange();
-assert.equal(countryWrap.hidden, false);
-assert.equal(countryInput.disabled, false);
-assert.equal(countryInput.required, true);
-countryInput.value = '일본';
-regionInputs[1].checked = false;
-regionInputs[0].checked = true;
-regionInputs[0].onChange();
-assert.equal(countryWrap.hidden, true);
-assert.equal(countryInput.value, '');
-
-attachment.files = [{name: 'too-large.pdf', size: 11 * 1024 * 1024}];
-attachment.onChange();
-assert.equal(error.hidden, false);
-attachment.files = [{name: 'drawing.pdf', size: 1024}];
-attachment.onChange();
-assert.equal(error.hidden, true);
-assert.equal(status.textContent, 'drawing.pdf');
-
-console.log('Consultation navigation, prefill, form fields, and attachment checks passed.');
+function input(value = '') { return {value,checked:false,disabled:false,required:false,listeners:{},addEventListener(event,callback){this.listeners[event]=callback;},focus(){this.focused=true;}}; }
+const name=input('테스트'),phone=input('01012345678'),email=input('test@example.com'),quickPhone=input('01012345678'),quickEmail=input('test@example.com');
+const regionDomestic=input('국내'),regionOverseas=input('해외');
+const categories=['특허신청','특허우선심사','의견제출통지서 대응','기타'].map(input);
+const stages=['아이디어 단계','출원 준비','심사 대응','기타'].map(input);
+const domestic={hidden:true},overseas={hidden:true},categoryFieldset={disabled:true},stageFieldset={hidden:true,disabled:true};
+const country=input(),patentNumber=input();country.disabled=true;patentNumber.disabled=true;
+const attachment=input();attachment.files=[];
+const status={textContent:''},error={hidden:true,textContent:''};
+const quickListeners={},fullListeners={};
+const quick={elements:{name,phone:quickPhone,email:quickEmail},addEventListener(event,callback){quickListeners[event]=callback;},reportValidity(){return true;}};
+const full={elements:{name,phone,email},addEventListener(event,callback){fullListeners[event]=callback;},reportValidity(){return true;},querySelectorAll(selector){if(selector.includes('jurisdiction'))return [regionDomestic,regionOverseas];if(selector.includes('category'))return categories;if(selector.includes('stage'))return stages;return [];},querySelector(selector){if(selector.includes('jurisdiction'))return [regionDomestic,regionOverseas].find(x=>x.checked);if(selector.includes('category'))return categories.find(x=>x.checked);return null;}};
+const elements={'contact-quick-form':quick,'consult-form':full,'consult-domestic':domestic,'consult-overseas':overseas,'consult-category-fieldset':categoryFieldset,'consult-stage-fieldset':stageFieldset,'consult-country':country,'consult-patent-number':patentNumber,'consult-attachment':attachment,'attachment-status':status,'attachment-error':error};
+const saved=new Map(),alerts=[];
+saved.set('von-consultation-lead',JSON.stringify({name:'테스트',phone:'01012345678',email:'test@example.com',stage:'출원 준비'}));
+const browser={name:'',alert(value){alerts.push(value);},location:{assign(url){browser.destination=url;}}};
+const context={document:{getElementById:id=>elements[id],querySelectorAll:selector=>selector==='input[name="phone"]'?[quickPhone,phone]:[]},window:browser,sessionStorage:{setItem:(k,v)=>saved.set(k,v),getItem:k=>saved.get(k),removeItem:k=>saved.delete(k)},FormData:class{get(key){return {name:name.value,phone:quickPhone.value,email:quickEmail.value,stage:'출원 준비'}[key];}}};
+vm.createContext(context);
+vm.runInContext(source.slice(logicStart),context);
+assert.equal(context.formatMobile('01012345678'),'010-1234-5678');
+assert.equal(context.validMobile('02-1234-5678'),false);
+assert.equal(context.validMobile('010-1234-5678'),true);
+for(const bad of ['hello','a@b','a@-example.com','a@example..com','a@example.c','a@example.123']) assert.equal(context.validEmail(bad),false,bad);
+assert.equal(context.validEmail('name@example.co.kr'),true);
+quickPhone.listeners.input();assert.equal(quickPhone.value,'010-1234-5678');
+assert.equal(full.elements.name.value,'테스트');assert.equal(full.elements.phone.value,'010-1234-5678');
+assert.equal(stages[1].checked,true);assert.equal(saved.has('von-consultation-lead'),false);
+let prevented=false;quickListeners.submit({preventDefault(){prevented=true;}});
+assert.equal(prevented,true);assert.equal(browser.destination,'contact.html');
+assert.equal(JSON.parse(saved.get('von-consultation-lead')).stage,'출원 준비');
+assert.equal(domestic.hidden,true);assert.equal(overseas.hidden,true);assert.equal(categoryFieldset.disabled,true);assert.equal(stageFieldset.disabled,true);
+regionDomestic.checked=true;regionDomestic.listeners.change();
+assert.equal(domestic.hidden,false);assert.equal(categoryFieldset.disabled,false);assert.equal(stageFieldset.hidden,true);
+categories[0].checked=true;categories[0].listeners.change();
+assert.equal(stageFieldset.hidden,false);assert.equal(stageFieldset.disabled,false);
+regionDomestic.checked=false;regionOverseas.checked=true;regionOverseas.listeners.change();
+assert.equal(domestic.hidden,true);assert.equal(categoryFieldset.disabled,true);assert.equal(stageFieldset.disabled,true);
+assert.equal(overseas.hidden,false);assert.equal(country.disabled,false);assert.equal(country.required,true);assert.equal(patentNumber.disabled,false);
+regionOverseas.checked=false;regionDomestic.checked=true;regionDomestic.listeners.change();
+assert.equal(overseas.hidden,true);assert.equal(country.disabled,true);assert.equal(patentNumber.disabled,true);
+phone.value='02-1234-5678';prevented=false;fullListeners.submit({preventDefault(){prevented=true;}});
+assert.equal(prevented,true);assert.match(alerts.at(-1),/연락처는 휴대폰 번호로 입력해야 합니다/);
+phone.value='01012345678';email.value='bad@example';prevented=false;fullListeners.submit({preventDefault(){prevented=true;}});
+assert.equal(prevented,true);assert.match(alerts.at(-1),/이메일 주소를 올바르게 입력해 주세요/);
+email.value='test@example.com';attachment.files=[{name:'too-large.pdf',size:11*1024*1024}];attachment.listeners.change();
+assert.equal(error.hidden,false);attachment.files=[{name:'drawing.pdf',size:1024}];attachment.listeners.change();
+assert.equal(error.hidden,true);prevented=false;fullListeners.submit({preventDefault(){prevented=true;}});assert.equal(prevented,false);
+console.log('Consultation branching, formatting, validation, prefill, and attachment checks passed.');

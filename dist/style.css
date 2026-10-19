@@ -160,6 +160,9 @@ html,body,button,input,select,textarea{font-family:'Pretendard','Malgun Gothic',
 .consult-region{grid-template-columns:repeat(2,minmax(0,1fr));max-width:500px}
 .consult-country{max-width:500px;margin-top:16px}
 .consult-country[hidden]{display:none}
+.consult-conditional[hidden],.consult-fieldset[hidden]{display:none}
+.consult-conditional .consult-fieldset:last-child{margin-bottom:24px}
+.consult-conditional .consult-region-help{max-width:500px;margin-bottom:18px}
 .consult-region-help{font-size:11px;line-height:1.6;color:#9baeb5;margin:10px 0 0}
 .consult-category{grid-template-columns:repeat(3,minmax(0,1fr))}
 .consult-stage{grid-template-columns:repeat(4,minmax(0,1fr))}
