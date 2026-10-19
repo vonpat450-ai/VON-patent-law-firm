@@ -4,7 +4,7 @@
 
 ## Cloudflare Pages 연결
 
-GitHub 저장소의 `main` 브랜치를 Cloudflare Pages에 연결합니다. Framework preset은 `None`, Build command는 비워 두고, Build output directory는 `dist`로 설정합니다. 배포 후 무료 `*.pages.dev` 주소를 사용할 수 있습니다. 이 사이트에는 npm 빌드가 필요하지 않습니다.
+GitHub 저장소의 `main` 브랜치를 Cloudflare Pages에 연결합니다. Framework preset은 `None`, Build command는 비워 두고, Build output directory는 `dist`로 설정합니다. 기본 공개 주소는 `https://vonpatglobalpt.net/`이며, `www.vonpatglobalpt.net`도 같은 Pages 프로젝트에 연결되어 있습니다. 이 사이트에는 npm 빌드가 필요하지 않습니다.
 
 ## 상담 이메일
 
