@@ -29,9 +29,9 @@ draw.text((70, 145), "브랜드 컬러를 살린 5가지 시안  |  크게 보�
 for index, (filename, title, subtitle) in enumerate(FILES):
     x = 70 + index * 338
     y = 210
-    draw.rounded_rectangle((x, y, x + 318, y + 360), radius=25, fill="white", outline="#1498d0" if index == 0 else "#d8e4e9", width=3 if index == 0 else 1)
+    draw.rounded_rectangle((x, y, x + 318, y + 360), radius=25, fill="white", outline="#1498d0" if index == 4 else "#d8e4e9", width=3 if index == 4 else 1)
     draw.text((x + 24, y + 20), f"0{index + 1}", fill="#7f9faa", font=font(18, True))
-    if index == 0:
+    if index == 4:
         draw.rounded_rectangle((x + 220, y + 17, x + 295, y + 47), radius=14, fill="#e6f5fb")
         draw.text((x + 231, y + 21), "적용 중", fill="#0874a6", font=font(14, True))
     document = fitz.open(stream=(DIR / filename).read_bytes(), filetype="svg")
