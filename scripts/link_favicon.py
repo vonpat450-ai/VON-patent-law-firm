@@ -4,7 +4,7 @@ from pathlib import Path
 import re
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = 2
+VERSION = 3
 LINKS = (
     f'<link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v={VERSION}">'
     f'<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png?v={VERSION}">'
