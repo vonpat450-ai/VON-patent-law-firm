@@ -75,7 +75,7 @@ document = f'''<!doctype html>
   <meta name="theme-color" content="#102b34">
   <meta name="description" content="PCT 출원 후 해외특허를 확보할 국가를 선택할 때 시장, 생산지, 경쟁사, 비용을 검토하는 방법을 살펴봅니다.">
   <title>{escape(title)} | 특허법인 본</title>
-  <link rel="stylesheet" href="style.css?v=pct-column-20261020">
+  <link rel="stylesheet" href="style.css?v=pct-images-20261020">
 </head>
 <body data-page="column">
   <div id="app"></div>
@@ -118,7 +118,7 @@ document = f'''<!doctype html>
       <div class="container column-back"><a href="knowledge.html">← 특허지식 목록으로</a></div>
     </main>
   </template>
-  <script src="app.js?v=pct-column-20261020" defer></script>
+  <script src="app.js?v=pct-images-20261020" defer></script>
 </body>
 </html>
 '''
