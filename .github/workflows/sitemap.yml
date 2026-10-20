@@ -1,0 +1,31 @@
+name: Refresh sitemap
+
+on:
+  schedule:
+    # 03:15 KST (UTC+9), every day.
+    - cron: "15 18 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Generate sitemap
+        run: python3 scripts/generate_sitemap.py
+      - name: Commit when page URLs or modification dates change
+        run: |
+          if git diff --quiet -- dist/sitemap.xml; then
+            echo "Sitemap is already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dist/sitemap.xml
+          git commit -m "chore: refresh sitemap"
+          git push
