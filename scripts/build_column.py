@@ -58,7 +58,14 @@ for line in lines[2:]:
 flush_paragraph()
 flush_bullets()
 
-toc = "".join(f'<li><a href="#{section_id}">{escape(heading)}</a></li>' for section_id, heading in sections)
+def toc_label(heading: str) -> str:
+    return re.sub(r"^\d+\.\s*", "", heading)
+
+
+toc = "".join(
+    f'<li><a href="#{section_id}">{escape(toc_label(heading))}</a></li>'
+    for section_id, heading in sections
+)
 body = "\n".join(blocks)
 document = f'''<!doctype html>
 <html lang="ko">
