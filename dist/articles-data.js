@@ -1,0 +1,1 @@
+window.VON_ARTICLES=[{"title":"PCT 출원했다고 전 세계 특허가 생기는 건 아닙니다","subtitle":"해외특허 국가 선택 전략","category":"해외특허","published":"2026-10-20","href":"column-pct-country-strategy.html","thumbnail":"assets/pct-country-strategy-thumb.webp"}];

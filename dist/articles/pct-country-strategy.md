@@ -1,3 +1,16 @@
+---
+published: 2026-10-20
+category: 해외특허
+thumbnail: assets/pct-country-strategy-thumb.webp
+hero: assets/pct-column-hero.webp
+description: PCT 출원 후 해외특허를 확보할 국가를 선택할 때 시장, 생산지, 경쟁사, 비용을 검토하는 방법을 살펴봅니다.
+related_url: overseas.html
+related_label: 해외특허등록 살펴보기
+source_1_label: WIPO PCT Newsletter, September 2026 — SME Support Series
+source_1_url: https://www.wipo.int/en/web/pct-system/article-9
+source_2_label: WIPO 국가·지역단계 진입기한표
+source_2_url: https://www.wipo.int/en/web/pct-system/texts/time_limits
+---
 # PCT 출원했다고 전 세계 특허가 생기는 건 아닙니다  
 ## 해외특허 국가 선택 전략
 

@@ -1,90 +1,141 @@
-"""Render the supplied PCT column Markdown as a static site page."""
+"""Build all Markdown columns and a listing for the home and knowledge pages."""
 
+from __future__ import annotations
+
+from datetime import date
 from html import escape
+import json
 from pathlib import Path
 import re
 
+DIST = Path(__file__).resolve().parents[1] / "dist"
+ASSET_RE = re.compile(r"^assets/[a-zA-Z0-9._-]+$")
+SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
-ROOT = Path(__file__).resolve().parents[1] / "dist"
-SOURCE = ROOT / "articles" / "pct-country-strategy.md"
-TARGET = ROOT / "column-pct-country-strategy.html"
-lines = SOURCE.read_text(encoding="utf-8-sig").splitlines()
-title = lines[0].removeprefix("# ").strip()
-subtitle = lines[1].removeprefix("## ").strip()
+
+def read_article(path: Path) -> tuple[dict[str, str], list[str]]:
+    lines = path.read_text(encoding="utf-8-sig").splitlines()
+    metadata: dict[str, str] = {}
+    if lines and lines[0].strip() == "---":
+        try:
+            end = lines.index("---", 1)
+        except ValueError as error:
+            raise ValueError(f"{path.name}: metadata is not closed") from error
+        for line in lines[1:end]:
+            if line.strip():
+                if ":" not in line:
+                    raise ValueError(f"{path.name}: invalid metadata line")
+                key, value = line.split(":", 1)
+                metadata[key.strip()] = value.strip()
+        lines = lines[end + 1:]
+    while lines and not lines[0].strip():
+        lines.pop(0)
+    if len(lines) < 2 or not lines[0].startswith("# ") or not lines[1].startswith("## "):
+        raise ValueError(f"{path.name}: start with # title and ## subtitle")
+    if not SLUG_RE.fullmatch(path.stem):
+        raise ValueError(f"{path.name}: use a lowercase hyphenated filename")
+    try:
+        date.fromisoformat(metadata.get("published", ""))
+    except ValueError as error:
+        raise ValueError(f"{path.name}: published must be YYYY-MM-DD") from error
+    for key in ("thumbnail", "hero"):
+        value = metadata.get(key, "")
+        if value and (not ASSET_RE.fullmatch(value) or not (DIST / value).is_file()):
+            raise ValueError(f"{path.name}: {key} must name an existing dist/assets file")
+    return metadata, lines
 
 
 def inline(value: str) -> str:
     return re.sub(r"\*\*(.+?)\*\*", lambda match: f"<strong>{match.group(1)}</strong>", escape(value))
 
 
-blocks = []
-sections = []
-paragraph = []
-bullets = []
+def render_body(lines: list[str]) -> tuple[str, str]:
+    blocks: list[str] = []
+    sections: list[tuple[str, str]] = []
+    paragraph: list[str] = []
+    bullets: list[str] = []
+
+    def flush() -> None:
+        if paragraph:
+            value = " ".join(paragraph)
+            css = ' class="column-emphasis"' if value.startswith("**") and value.endswith("**") else ""
+            blocks.append(f"<p{css}>{inline(value)}</p>")
+            paragraph.clear()
+        if bullets:
+            blocks.append('<ul class="column-list">' + "".join(f"<li>{inline(value)}</li>" for value in bullets) + "</ul>")
+            bullets.clear()
+
+    for line in lines[2:]:
+        value = line.strip()
+        if not value:
+            flush()
+        elif value.startswith("## "):
+            flush()
+            heading = value[3:]
+            section_id = f"section-{len(sections) + 1}"
+            sections.append((section_id, heading))
+            blocks.append(f'<h2 id="{section_id}">{escape(heading)}</h2>')
+        elif value.startswith("- "):
+            if paragraph:
+                flush()
+            bullets.append(value[2:])
+        else:
+            if bullets:
+                flush()
+            paragraph.append(value)
+    flush()
+    toc = "".join(
+        f'<li><a href="#{section_id}">{escape(re.sub(r"^\d+\.\s*", "", heading))}</a></li>'
+        for section_id, heading in sections
+    )
+    return "\n".join(blocks), toc
 
 
-def flush_paragraph() -> None:
-    if paragraph:
-        value = " ".join(paragraph)
-        emphasis = value.startswith("**") and value.endswith("**")
-        blocks.append(f'<p class="column-emphasis">{inline(value)}</p>' if emphasis else f"<p>{inline(value)}</p>")
-        paragraph.clear()
+def sources_html(metadata: dict[str, str]) -> str:
+    links = []
+    for number in range(1, 11):
+        label = metadata.get(f"source_{number}_label", "")
+        url = metadata.get(f"source_{number}_url", "")
+        if label and url:
+            if not url.startswith("https://"):
+                raise ValueError("source URLs must use https")
+            links.append(f'<li><a href="{escape(url, quote=True)}" target="_blank" rel="noopener noreferrer">{escape(label)} ↗</a></li>')
+    return ('<section class="column-sources" aria-labelledby="column-sources-title"><h2 id="column-sources-title">참고 자료</h2><ul>' + "".join(links) + "</ul></section>") if links else ""
 
 
-def flush_bullets() -> None:
-    if bullets:
-        blocks.append('<ul class="column-list">' + "".join(f"<li>{inline(value)}</li>" for value in bullets) + "</ul>")
-        bullets.clear()
-
-
-for line in lines[2:]:
-    value = line.strip()
-    if not value:
-        flush_paragraph()
-        flush_bullets()
-    elif value.startswith("## "):
-        flush_paragraph()
-        flush_bullets()
-        heading = value[3:]
-        section_id = f"section-{len(sections) + 1}"
-        sections.append((section_id, heading))
-        blocks.append(f'<h2 id="{section_id}">{escape(heading)}</h2>')
-    elif value.startswith("- "):
-        flush_paragraph()
-        bullets.append(value[2:])
-    else:
-        flush_bullets()
-        paragraph.append(value)
-flush_paragraph()
-flush_bullets()
-
-def toc_label(heading: str) -> str:
-    return re.sub(r"^\d+\.\s*", "", heading)
-
-
-toc = "".join(
-    f'<li><a href="#{section_id}">{escape(toc_label(heading))}</a></li>'
-    for section_id, heading in sections
-)
-body = "\n".join(blocks)
-document = f'''<!doctype html>
+def render_page(path: Path, metadata: dict[str, str], lines: list[str]) -> dict[str, str]:
+    title, subtitle = lines[0][2:].strip(), lines[1][3:].strip()
+    category = metadata.get("category", "특허지식")
+    description = metadata.get("description", subtitle)
+    hero = metadata.get("hero", "assets/knowledge-hero.png")
+    body, toc = render_body(lines)
+    related_url = metadata.get("related_url", "")
+    related_label = metadata.get("related_label", "더 알아보기")
+    if related_url and not re.fullmatch(r"[a-z-]+\.html", related_url):
+        raise ValueError(f"{path.name}: related_url must be a local HTML page")
+    related = f'<a class="column-sidebar-link" href="{escape(related_url, quote=True)}">{escape(related_label)} <span aria-hidden="true">↗</span></a>' if related_url else ""
+    document = f'''<!doctype html>
 <html lang="ko">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#102b34">
-  <meta name="description" content="PCT 출원 후 해외특허를 확보할 국가를 선택할 때 시장, 생산지, 경쟁사, 비용을 검토하는 방법을 살펴봅니다.">
+  <meta name="description" content="{escape(description, quote=True)}">
   <title>{escape(title)} | 특허법인 본</title>
-  <link rel="stylesheet" href="style.css?v=pct-images-20261020">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=3">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png?v=3">
+  <link rel="shortcut icon" href="assets/favicon.ico?v=3">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon-180.png?v=3">
+  <link rel="stylesheet" href="style.css?v=columns-1">
 </head>
 <body data-page="column">
   <div id="app"></div>
   <template id="column-content">
     <main>
-      <section class="column-hero">
+      <section class="column-hero" style="--column-hero-image:url('{hero}')">
         <div class="container">
           <nav class="breadcrumb" aria-label="현재 위치"><a href="index.html">⌂</a><span>›</span><a href="knowledge.html">특허지식</a><span>›</span><span>칼럼</span></nav>
-          <span class="column-kicker">VON PATENT INSIGHT · 해외특허</span>
+          <span class="column-kicker">VON PATENT INSIGHT · {escape(category)}</span>
           <h1>{escape(title)}</h1>
           <p>{escape(subtitle)}</p>
         </div>
@@ -92,35 +143,38 @@ document = f'''<!doctype html>
       <section class="column-section">
         <div class="container column-layout">
           <aside class="column-sidebar" aria-label="칼럼 목차">
-            <details class="column-toc" open>
-              <summary>이 글의 목차</summary>
-              <ol>{toc}</ol>
-            </details>
-            <a class="column-sidebar-link" href="overseas.html">해외특허등록 살펴보기 <span aria-hidden="true">↗</span></a>
+            <details class="column-toc" open><summary>이 글의 목차</summary><ol>{toc}</ol></details>
+            {related}
           </aside>
-          <article class="column-body">{body}
-            <section class="column-sources" aria-labelledby="column-sources-title">
-              <h2 id="column-sources-title">참고 자료</h2>
-              <ul>
-                <li><a href="https://www.wipo.int/en/web/pct-system/article-9" target="_blank" rel="noopener noreferrer">WIPO PCT Newsletter, September 2026 — SME Support Series ↗</a></li>
-                <li><a href="https://www.wipo.int/en/web/pct-system/texts/time_limits" target="_blank" rel="noopener noreferrer">WIPO 국가·지역단계 진입기한표 ↗</a></li>
-              </ul>
-            </section>
-          </article>
+          <article class="column-body">{body}{sources_html(metadata)}</article>
         </div>
       </section>
       <section class="column-bottom">
         <div class="container column-bottom-inner">
-          <div><span>해외출원 상담</span><h2>어느 국가에서 권리를 확보해야 할지<br>함께 검토해 보세요.</h2><p>진출 시장과 사업 일정, 현재 출원 상황을 알려주시면 상담 방향을 안내해 드립니다.</p></div>
+          <div><span>특허 상담</span><h2>현재 상황에 맞는 특허 전략을<br>함께 검토해 보세요.</h2><p>출원 국가와 기술의 진행 상황을 알려주시면 상담 방향을 안내해 드립니다.</p></div>
           <a class="btn btn-primary" href="contact.html">상담 신청 <span aria-hidden="true">→</span></a>
         </div>
       </section>
       <div class="container column-back"><a href="knowledge.html">← 특허지식 목록으로</a></div>
     </main>
   </template>
-  <script src="app.js?v=pct-images-20261020" defer></script>
+  <script src="app.js?v=columns-1" defer></script>
 </body>
 </html>
 '''
-TARGET.write_text(document, encoding="utf-8")
-print(f"Wrote {TARGET} with {len(sections)} sections")
+    target = DIST / f"column-{path.stem}.html"
+    target.write_text(document, encoding="utf-8")
+    print(f"Wrote {target.name}")
+    return {"title": title, "subtitle": subtitle, "category": category, "published": metadata["published"], "href": target.name, "thumbnail": metadata.get("thumbnail", "")}
+
+
+def main() -> None:
+    listing = [render_page(path, *read_article(path)) for path in sorted((DIST / "articles").glob("*.md"))]
+    listing.sort(key=lambda item: (item["published"], item["href"]), reverse=True)
+    data = json.dumps(listing, ensure_ascii=False, separators=(",", ":")).replace("\u2028", "\\u2028").replace("\u2029", "\\u2029")
+    (DIST / "articles-data.js").write_text(f"window.VON_ARTICLES={data};\n", encoding="utf-8")
+    print(f"Indexed {len(listing)} columns")
+
+
+if __name__ == "__main__":
+    main()

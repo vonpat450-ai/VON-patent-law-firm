@@ -17,8 +17,10 @@ NAMESPACE = "http://www.sitemaps.org/schemas/sitemap/0.9"
 
 def last_modified(page: Path) -> str:
     paths = [page.relative_to(ROOT), Path("dist/app.js")]
-    if page.name == "column-pct-country-strategy.html":
-        paths.append(Path("dist/articles/pct-country-strategy.md"))
+    if page.name in {"index.html", "knowledge.html"}:
+        paths.append(Path("dist/articles-data.js"))
+    if page.name.startswith("column-"):
+        paths.append(Path(f"dist/articles/{page.stem.removeprefix('column-')}.md"))
     result = subprocess.run(
         [
             "git", "-c", f"safe.directory={ROOT.as_posix()}", "log", "-1",

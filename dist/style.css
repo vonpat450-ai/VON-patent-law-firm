@@ -321,3 +321,10 @@ html,body,button,input,select,textarea{font-family:'Pretendard','Malgun Gothic',
 @media(max-width:950px){.column-layout{grid-template-columns:200px minmax(0,1fr);gap:36px}.column-hero{background-size:cover,auto 120%}}
 @media(max-width:760px){.column-hero{padding:37px 0 57px;background-size:cover,auto 100%;background-position:center,right bottom}.column-hero .breadcrumb{margin-bottom:40px}.column-hero h1{font-size:38px;max-width:520px}.column-hero p{font-size:15px}.column-section{padding:45px 0 75px}.column-layout{grid-template-columns:1fr;gap:36px}.column-sidebar{position:static}.column-toc ol{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 22px}.column-body h2{font-size:24px;margin-top:49px}.column-bottom-inner{align-items:flex-start;flex-direction:column}}
 @media(max-width:520px){.column-hero h1{font-size:33px}.column-hero{background-image:linear-gradient(90deg,#f6fafbf5,#f6fafbdc),url('assets/pct-column-hero.webp')}.column-toc ol{grid-template-columns:1fr}.column-body p,.column-body li{font-size:15px}.column-body>p:first-child{font-size:17px}.column-body h2{font-size:22px}.column-bottom h2{font-size:23px}}
+
+/* Shared article cards and column images. Each article supplies its own image. */
+.article-art-custom{display:flex;align-items:flex-end;padding:19px;background-image:linear-gradient(90deg,#102b34c9,#102b3408),var(--article-image,linear-gradient(135deg,#bfd9e3,#eaf3f6));background-position:center,right center;background-size:cover;background-repeat:no-repeat}
+.article-art-custom::before,.article-art-custom::after{display:none}
+.article-art-custom span{position:relative;color:#e7f4f7;font-size:11px;font-weight:800;letter-spacing:.07em}
+.column-hero{background-image:linear-gradient(90deg,#f6fafb 0%,#f6fafb 36%,#f6fafbdc 50%,#f6fafb59 73%,transparent 92%),var(--column-hero-image)}
+@media(max-width:520px){.column-hero{background-image:linear-gradient(90deg,#f6fafbf5,#f6fafbdc),var(--column-hero-image)}}

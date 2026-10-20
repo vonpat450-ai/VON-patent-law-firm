@@ -14,6 +14,36 @@ GitHub 저장소의 `main` 브랜치를 Cloudflare Pages에 연결합니다. Fra
 
 `python scripts/generate_sitemap.py`가 `dist/`의 공개 HTML 페이지를 찾아 정식 주소로 `dist/sitemap.xml`을 만듭니다. 예전 검색 주소인 `search.html`은 해외특허 페이지로 이동하므로 제외합니다. 각 페이지의 `lastmod`는 Git의 실제 수정 날짜를 사용합니다. `.github/workflows/sitemap.yml`은 매일 한국 시간 새벽 3시 15분에 실행되며, 사이트맵 내용이 달라진 경우에만 `main`에 커밋해 Cloudflare Pages에 배포합니다. GitHub Actions 화면에서 수동 실행도 가능합니다. `dist/robots.txt`에서 사이트맵 주소를 검색엔진에 알립니다.
 
+## 칼럼 추가
+
+`dist/articles/`에 영문 소문자와 하이픈으로 된 이름의 Markdown 파일을 추가합니다. 파일 이름이 공개 주소가 됩니다. 예를 들어 `overseas-filing-guide.md`는 `column-overseas-filing-guide.html`로 생성됩니다. 파일 상단 형식은 다음과 같습니다.
+
+```md
+---
+published: 2026-10-21
+category: 해외특허
+description: 검색 결과에 표시할 한 줄 소개
+thumbnail: assets/column-thumbnail.png
+hero: assets/column-hero.png
+related_url: overseas.html
+related_label: 해외특허등록 살펴보기
+source_1_label: 참고 자료 이름
+source_1_url: https://example.com/source
+---
+# 칼럼 제목
+## 칼럼 부제
+
+본문 첫 문단입니다.
+
+## 1. 첫 번째 소제목
+
+본문이 이어집니다.
+```
+
+`published`와 제목·부제는 필수입니다. `thumbnail`, `hero`, 관련 페이지, 참고 자료 항목은 선택 사항입니다. 이미지를 지정하려면 파일을 `dist/assets/`에 먼저 추가합니다. 썸네일이 없으면 기본 그래픽이, 상단 이미지가 없으면 특허지식 기본 이미지가 표시됩니다. 참고 자료는 `source_2_label` / `source_2_url`처럼 최대 10개까지 추가할 수 있습니다.
+
+로컬에서는 `python scripts/build_column.py`와 `python scripts/generate_sitemap.py`를 순서대로 실행합니다. 생성기는 모든 원고로 개별 칼럼 페이지와 `dist/articles-data.js` 목록을 만듭니다. 특허지식에는 모든 칼럼이 최신 게시일 순으로, 메인에는 최신 3편이 표시됩니다. GitHub의 `main` 브랜치에 원고를 올리면 `.github/workflows/build-columns.yml`이 같은 작업을 자동으로 실행하고 Cloudflare 배포로 이어집니다. 같은 제목이라도 파일 이름은 서로 달라야 합니다.
+
 ## 보류 중인 작업
 
-특허 칼럼의 AI 자동 작성은 회사에서 칼럼 양식을 제공한 뒤 설계합니다. 기존 특허정보검색 화면은 해외특허등록 안내 페이지(`overseas.html`)로 대체했습니다. 기존 `search.html` 주소는 새 페이지로 이동합니다.
+Gemini를 이용한 칼럼 원고의 매일 자동 작성은 아직 연결되지 않았습니다. 기존 특허정보검색 화면은 해외특허등록 안내 페이지(`overseas.html`)로 대체했습니다. 기존 `search.html` 주소는 새 페이지로 이동합니다.
