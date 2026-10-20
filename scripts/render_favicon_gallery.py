@@ -48,3 +48,34 @@ for index, (filename, title, subtitle) in enumerate(FILES):
         draw.text((x + dx + size + 8, y + 321), f"{size}px", fill="#79909b", font=font(14))
 
 canvas.save(DIR / "preview.png")
+
+simple = [
+    ("06-simple-globe.svg", "지구", "국내·해외를 하나로"),
+    ("07-simple-route.svg", "연결 경로", "국경을 넘는 출원"),
+    ("08-simple-shield.svg", "권리 보호", "특허 권리를 지키는 상징"),
+]
+canvas = Image.new("RGB", (1160, 590), "#edf3f5")
+draw = ImageDraw.Draw(canvas)
+draw.text((70, 40), "VON PATENT · SIMPLE FAVICON", fill="#1686b8", font=font(20, True))
+draw.text((70, 83), "글자 없이, 더 단순하게", fill="#102b34", font=font(38, True))
+draw.text((70, 145), "기존 로고의 진남색·파란색을 유지한 추가 시안 3종", fill="#617782", font=font(19))
+
+for index, (filename, title, subtitle) in enumerate(simple):
+    x = 70 + index * 350
+    y = 210
+    draw.rounded_rectangle((x, y, x + 326, y + 330), radius=24, fill="white", outline="#d8e4e9")
+    draw.text((x + 25, y + 19), f"0{index + 6}", fill="#7f9faa", font=font(18, True))
+    document = fitz.open(stream=(DIR / filename).read_bytes(), filetype="svg")
+    pixmap = document[0].get_pixmap(matrix=fitz.Matrix(2.5, 2.5), alpha=True)
+    icon = Image.frombytes("RGBA", (pixmap.width, pixmap.height), pixmap.samples)
+    icon = icon.resize((142, 142), Image.Resampling.LANCZOS)
+    canvas.paste(icon, (x + 92, y + 48), icon)
+    draw.text((x + 25, y + 204), title, fill="#102b34", font=font(23, True))
+    draw.text((x + 25, y + 245), subtitle, fill="#617782", font=font(16))
+    draw.line((x + 25, y + 283, x + 301, y + 283), fill="#e3ebee", width=1)
+    for size, dx in ((32, 26), (16, 145)):
+        small = icon.resize((size, size), Image.Resampling.LANCZOS)
+        canvas.paste(small, (x + dx, y + 292), small)
+        draw.text((x + dx + size + 8, y + 295), f"{size}px", fill="#79909b", font=font(14))
+
+canvas.save(DIR / "preview-simple.png")
