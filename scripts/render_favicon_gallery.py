@@ -1,0 +1,50 @@
+"""Render the five SVG concepts into a single shareable review sheet."""
+
+from pathlib import Path
+from PIL import Image, ImageDraw, ImageFont
+import fitz
+
+ROOT = Path(__file__).resolve().parents[1]
+DIR = ROOT / "design" / "favicon-concepts"
+FILES = [
+    ("01-v-orbit.svg", "V + 글로벌 궤도", "브랜드 · 해외 확장"),
+    ("02-world-shield.svg", "글로벌 권리 보호", "세계 · 보호"),
+    ("03-two-regions.svg", "국내 · 해외 연결", "두 영역 · 한 창구"),
+    ("04-patent-route.svg", "특허 문서 + 세계", "출원 · 해외 절차"),
+    ("05-global-compass.svg", "글로벌 방향 제시", "국가별 출원 경로"),
+]
+
+
+def font(size, bold=False):
+    name = "malgunbd.ttf" if bold else "malgun.ttf"
+    return ImageFont.truetype(str(Path("C:/Windows/Fonts") / name), size)
+
+
+canvas = Image.new("RGB", (1760, 630), "#edf3f5")
+draw = ImageDraw.Draw(canvas)
+draw.text((70, 40), "VON PATENT · FAVICON CONCEPTS", fill="#1686b8", font=font(21, True))
+draw.text((70, 83), "국내에서 세계까지, 하나의 특허 상담 창구", fill="#102b34", font=font(39, True))
+draw.text((70, 145), "브랜드 컬러를 살린 5가지 시안  |  크게 보기와 16px 브라우저 탭 크기 비교", fill="#617782", font=font(20))
+
+for index, (filename, title, subtitle) in enumerate(FILES):
+    x = 70 + index * 338
+    y = 210
+    draw.rounded_rectangle((x, y, x + 318, y + 360), radius=25, fill="white", outline="#1498d0" if index == 0 else "#d8e4e9", width=3 if index == 0 else 1)
+    draw.text((x + 24, y + 20), f"0{index + 1}", fill="#7f9faa", font=font(18, True))
+    if index == 0:
+        draw.rounded_rectangle((x + 220, y + 17, x + 295, y + 47), radius=14, fill="#e6f5fb")
+        draw.text((x + 231, y + 21), "적용 중", fill="#0874a6", font=font(14, True))
+    document = fitz.open(stream=(DIR / filename).read_bytes(), filetype="svg")
+    pixmap = document[0].get_pixmap(matrix=fitz.Matrix(2.5, 2.5), alpha=True)
+    icon = Image.frombytes("RGBA", (pixmap.width, pixmap.height), pixmap.samples)
+    icon = icon.resize((152, 152), Image.Resampling.LANCZOS)
+    canvas.paste(icon, (x + 83, y + 61), icon)
+    draw.text((x + 24, y + 224), title, fill="#102b34", font=font(21, True))
+    draw.text((x + 24, y + 263), subtitle, fill="#617782", font=font(16))
+    draw.line((x + 24, y + 307, x + 294, y + 307), fill="#e3ebee", width=1)
+    for size, dx in ((32, 28), (16, 136)):
+        small = icon.resize((size, size), Image.Resampling.LANCZOS)
+        canvas.paste(small, (x + dx, y + 319), small)
+        draw.text((x + dx + size + 8, y + 321), f"{size}px", fill="#79909b", font=font(14))
+
+canvas.save(DIR / "preview.png")
