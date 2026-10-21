@@ -43,6 +43,16 @@ def valid_article() -> dict:
 
 
 class DraftTests(unittest.TestCase):
+    def test_presentational_variants_are_normalized(self) -> None:
+        article = valid_article()
+        article["body"] = article["body"].replace(":::takeaway", "## 핵심 답", 1).replace("\n:::\n\n해외", "\n\n해외", 1)
+        article["body"] = article["body"].replace("## 마무리", "## 결론")
+        article["body"] = article["body"].replace("## 1.", "### 01)")
+        cleaned = evidence.clean_article(article, TOPIC)
+        self.assertTrue(cleaned["body"].startswith(":::takeaway\n"))
+        self.assertIn("## 1.", cleaned["body"])
+        self.assertIn("## 마무리", cleaned["body"])
+
     def test_editorial_format_and_direct_evidence(self) -> None:
         article = evidence.validate_article(valid_article(), TOPIC, SOURCE, [])
         lines = ["# " + article["title"], "## 핵심 답", *article["body"].splitlines()]

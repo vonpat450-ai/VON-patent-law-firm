@@ -26,6 +26,19 @@ GUIDELINES = (AUTOMATION / "column_prompt_ko.txt").read_text(encoding="utf-8")
 MODELS = ("gemini-3.5-flash", "gemini-3.5-flash-lite")
 BASE_URL = "https://vonpatglobalpt.net"
 ALLOWED_HOSTS = {"www.kipo.go.kr", "www.wipo.int"}
+STRING = {"type": "STRING"}
+SOURCE_SCHEMA = {"type": "OBJECT", "properties": {key: STRING for key in ("title", "organization", "published", "url", "verified_excerpt")}, "required": ["title", "organization", "published", "url", "verified_excerpt"]}
+CLAIM_SCHEMA = {"type": "OBJECT", "properties": {key: STRING for key in ("claim", "source_url", "evidence_quote")}, "required": ["claim", "source_url", "evidence_quote"]}
+ARTICLE_SCHEMA = {
+    "type": "OBJECT",
+    "properties": {
+        **{key: STRING for key in ("title", "category", "slug", "summary", "meta_description", "body")},
+        "sources": {"type": "ARRAY", "items": SOURCE_SCHEMA},
+        "claims": {"type": "ARRAY", "items": CLAIM_SCHEMA},
+    },
+    "required": ["title", "category", "slug", "summary", "meta_description", "body", "sources", "claims"],
+}
+AUDIT_SCHEMA = {"type": "OBJECT", "properties": {"supported": {"type": "BOOLEAN"}, "unsupported_claims": {"type": "ARRAY", "items": STRING}}, "required": ["supported", "unsupported_claims"]}
 
 
 class TextOnly(HTMLParser):
@@ -123,7 +136,8 @@ def prompt_for(today: date, topic: dict, source: dict, recent: list[dict]) -> st
 def gemini_json(prompt: str, api_key: str, opener=request.urlopen) -> dict:
     if not api_key:
         raise RuntimeError("GEMINI_API_KEY is missing")
-    payload = json.dumps({"contents": [{"parts": [{"text": prompt}]}], "generationConfig": {"temperature": 0.35, "maxOutputTokens": 8192, "responseMimeType": "application/json"}}, ensure_ascii=False).encode("utf-8")
+    schema = AUDIT_SCHEMA if prompt.startswith("너는 게시 전 사실 검토자다") else ARTICLE_SCHEMA
+    payload = json.dumps({"contents": [{"parts": [{"text": prompt}]}], "generationConfig": {"temperature": 0.25, "maxOutputTokens": 8192, "responseMimeType": "application/json", "responseSchema": schema}}, ensure_ascii=False).encode("utf-8")
     last_error: Exception | None = None
     for model in MODELS:
         req = request.Request(f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent", data=payload, headers={"Content-Type": "application/json", "x-goog-api-key": api_key}, method="POST")
@@ -154,7 +168,34 @@ def clean_article(raw: dict, topic: dict) -> dict:
             article[key] = article[key].strip()
     body = article.get("body", "")
     if isinstance(body, str):
-        article["body"] = re.sub(r"^```(?:markdown|md)?\s*|\s*```$", "", body, flags=re.I).strip()
+        body = re.sub(r"^```(?:markdown|md)?\s*|\s*```$", "", body, flags=re.I).strip()
+        body = re.sub(r"\A# [^\n]+\n+", "", body)
+        body = re.sub(r"(?m)^#{2,3}\s*0?([1-4])[.)]\s*", r"## \1. ", body)
+        body = re.sub(r"(?m)^## (?:결론|정리|마지막으로)\s*$", "## 마무리", body)
+        # Gemini sometimes returns ordinary headings instead of the requested
+        # fenced blocks. Canonicalize those purely presentational differences.
+        if ":::takeaway" not in body:
+            match = re.search(r"(?ms)^## (?:핵심 답|핵심 결론|먼저 알아둘 답)\s*\n(.*?)(?=^## |\Z)", body)
+            if match:
+                answer = match.group(1).strip()
+                body = body[:match.start()] + body[match.end():]
+                body = f":::takeaway\n{answer}\n:::\n\n" + body.lstrip()
+        takeaway = re.search(r"(?ms)^:::takeaway\s*\n(.*?)\n:::\s*", body)
+        if takeaway and takeaway.start() != 0:
+            body = takeaway.group(0).strip() + "\n\n" + (body[:takeaway.start()] + body[takeaway.end():]).strip()
+        if ":::checklist" not in body:
+            match = re.search(r"(?ms)^## (?:확인 항목|점검 항목|체크리스트|실무 체크리스트)\s*\n((?:\s*- [^\n]+\n?){3,5})", body)
+            if match:
+                checklist = match.group(1).strip()
+                body = body[:match.start()] + f":::checklist\n{checklist}\n:::" + body[match.end():]
+        checklist = re.search(r"(?ms)^:::checklist\s*\n(.*?)\n:::\s*", body)
+        closing = re.search(r"(?m)^## 마무리\s*$", body)
+        if checklist and closing and checklist.start() > closing.start():
+            block = checklist.group(0).strip()
+            body = body[:checklist.start()] + body[checklist.end():]
+            closing = re.search(r"(?m)^## 마무리\s*$", body)
+            body = body[:closing.start()] + block + "\n\n" + body[closing.start():]
+        article["body"] = body.strip()
     if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+){2,5}", str(article.get("slug", ""))):
         article["slug"] = f"patent-{topic['key']}-guide"
     article["category"] = topic["category"]
@@ -180,7 +221,9 @@ def validate_article(article: dict, topic: dict, source: dict, recent: list[dict
         raise ValueError("Body length is outside the editorial range")
     if body.count(":::takeaway") != 1 or body.count(":::checklist") != 1:
         raise ValueError("Body needs a takeaway and checklist")
-    if not body.startswith(":::takeaway\n") or body.index(":::checklist") < body.index("## 1.") or body.index("## 마무리") < body.index(":::checklist"):
+    if (not body.startswith(":::takeaway\n") or "## 1." not in body or "## 마무리" not in body
+            or body.index(":::checklist") < body.index("## 1.")
+            or body.index("## 마무리") < body.index(":::checklist")):
         raise ValueError("Body sections are not in the requested order")
     headings = re.findall(r"(?m)^## ([1-4])\. (.+)$", body)
     if len(headings) not in (3, 4) or [int(n) for n, _ in headings] != list(range(1, len(headings) + 1)):
