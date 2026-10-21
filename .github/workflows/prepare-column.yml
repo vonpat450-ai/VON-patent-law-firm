@@ -1,0 +1,53 @@
+name: Prepare verified patent columns
+
+on:
+  schedule:
+    - cron: "17 5,7 * * *"
+      timezone: "Asia/Seoul"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Generate and validate one draft without saving it"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-patent-column-pipeline
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install image renderer
+        run: python3 -m pip install "Pillow>=10,<13"
+      - name: Fetch official text and prepare drafts with Gemini
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            python3 scripts/publish_daily_column.py prepare --dry-run
+          else
+            python3 scripts/publish_daily_column.py prepare
+          fi
+      - name: Preserve verified queue
+        if: ${{ inputs.dry_run != true }}
+        run: |
+          git add -A automation/queue/
+          if git diff --cached --quiet; then
+            echo "Verified queue is already full."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "content: prepare verified patent columns"
+          git push

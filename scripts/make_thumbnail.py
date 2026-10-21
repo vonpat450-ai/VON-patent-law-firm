@@ -40,7 +40,7 @@ def theme_for(value: str) -> str:
 
 
 def create_thumbnail(slug: str, title: str, category: str, description: str = "") -> str:
-    if not re.fullmatch(r"daily-[0-9]{4}-[0-9]{2}-[0-9]{2}", slug):
+    if not re.fullmatch(r"daily-[0-9]{4}-[0-9]{2}-[0-9]{2}(?:-[a-z0-9]+)*", slug):
         raise ValueError("Invalid daily column slug")
     theme = theme_for(title)
     if theme == "filing":

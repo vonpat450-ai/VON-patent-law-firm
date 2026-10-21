@@ -1,22 +1,29 @@
-name: Publish daily patent column
+name: Publish verified daily patent column
 
 on:
   schedule:
-    # Two chances each day; the second run exits if today's article exists.
-    - cron: "17 8,10 * * *"
+    - cron: "0 8 * * *"
+      timezone: "Asia/Seoul"
+    - cron: "30 8 * * *"
+      timezone: "Asia/Seoul"
+    - cron: "0 9 * * *"
+      timezone: "Asia/Seoul"
+    - cron: "30 9 * * *"
+      timezone: "Asia/Seoul"
+    - cron: "0 10 * * *"
       timezone: "Asia/Seoul"
   workflow_dispatch:
     inputs:
-      dry_run:
-        description: "Validate Gemini output without publishing"
+      check_existing:
+        description: "Read-only check of today's published column"
         type: boolean
-        default: false
+        default: true
 
 permissions:
   contents: write
 
 concurrency:
-  group: publish-daily-column
+  group: daily-patent-column-pipeline
   cancel-in-progress: false
 
 jobs:
@@ -26,31 +33,45 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - name: Install image renderer
         run: python3 -m pip install "Pillow>=10,<13"
-      - name: Write today's column with Gemini
+      - name: Inspect today's live column without publishing
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: python3 scripts/publish_daily_column.py verify-existing
+      - name: Stage one queued column or retry its deployment
+        if: ${{ github.event_name == 'schedule' }}
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          COLUMN_SLOT: ${{ github.event.schedule }}
+        run: python3 scripts/publish_daily_column.py stage --slot "$COLUMN_SLOT"
+      - name: Push staged content to GitHub and Cloudflare Pages
+        if: ${{ github.event_name == 'schedule' }}
         run: |
-          if [ "${{ inputs.dry_run }}" = "true" ]; then
-            python3 scripts/publish_daily_column.py --dry-run
-          else
-            python3 scripts/publish_daily_column.py
-          fi
-      - name: Build pages and sitemap
-        if: ${{ inputs.dry_run != true }}
-        run: |
-          python3 scripts/build_column.py
-          python3 scripts/generate_sitemap.py
-      - name: Publish changed files
-        if: ${{ inputs.dry_run != true }}
-        run: |
-          git add dist/articles/ dist/assets/daily-*-thumb.webp dist/column-*.html dist/articles-data.js dist/index.html dist/knowledge.html dist/sitemap.xml
+          git add -A automation/queue/ automation/state.json dist/
           if git diff --cached --quiet; then
-            echo "Today's column is already published."
+            echo "No new publication files for this slot."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "content: publish daily patent column"
+          git commit -m "content: stage daily patent column"
           git push
+      - name: Check actual site visibility
+        if: ${{ github.event_name == 'schedule' }}
+        run: python3 scripts/publish_daily_column.py verify --wait-seconds 540
+      - name: Save verified result or failure state
+        if: ${{ github.event_name == 'schedule' }}
+        run: |
+          git add -A automation/queue/ automation/state.json
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "content: record daily column verification"
+          git push
+      - name: Require public-site success
+        if: ${{ github.event_name == 'schedule' }}
+        run: python3 scripts/publish_daily_column.py assert-published

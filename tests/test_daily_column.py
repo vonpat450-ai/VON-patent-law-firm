@@ -1,81 +1,166 @@
-"""Checks for the unattended article publisher; no API key is needed."""
+"""Simulation of the five publication and failure paths without API charges."""
 
+from datetime import date
+import json
 from pathlib import Path
 import sys
 import tempfile
 import unittest
-from PIL import Image
-
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from build_column import read_article, render_insight_body  # noqa: E402
-from make_thumbnail import create_thumbnail, theme_for  # noqa: E402
-from publish_daily_column import choose_topic, serialize, validate_article  # noqa: E402
+import build_column  # noqa: E402
+import column_automation as evidence  # noqa: E402
+import publish_daily_column as publisher  # noqa: E402
 
 
-def article(title: str = "출원 전에 무엇을 점검할까요?") -> dict[str, str]:
-    section = "기술의 차이와 공개 범위를 먼저 확인하고, 사안별로 관련 자료를 정리해 상담할 필요가 있습니다. " * 5
-    body = ":::takeaway\n출원 전 공개 여부를 확인하세요.\n기술의 핵심을 정리하고 공개 일정을 점검합니다.\n:::\n\n"
-    body += "새로운 기술을 준비할 때는 발명의 특징을 구체적으로 정리하는 것이 도움이 됩니다.\n\n"
-    extras = {
-        1: ":::quote\n먼저 공개 일정을 살펴보세요.\n:::",
-        2: ":::cards\n- 신규성 | 새로운지 확인합니다.\n- 진보성 | 차이를 확인합니다.\n- 이용가능성 | 활용할 수 있는지 확인합니다.\n:::",
-        3: ":::steps\n- 조사 | 비슷한 기술을 찾습니다.\n- 비교 | 차이점을 적습니다.\n- 검토 | 방향을 정합니다.\n:::",
-        4: ":::checklist\n- 공개 날짜가 있나요?\n- 기술을 설명할 수 있나요?\n- 기존 기술과 다른가요?\n- 자료를 정리했나요?\n:::",
+SOURCE = {
+    "organization": "WIPO", "title": "Example official guide", "published": "2026-08",
+    "url": "https://www.wipo.int/en/web/pct-system/faqs/faqs",
+    "text": ("The granting of patents remains under the control of national or regional patent Offices in the national phase. " * 40).strip(),
+    "body_sha256": "stable", "checked_at": "2026-10-21T06:00:00",
+}
+QUOTE = "The granting of patents remains under the control of national or regional patent Offices"
+TOPIC = {"key": "pct-national-phase", "category": "해외특허", "question": "PCT 뒤에 무엇을 해야 하나요?", "related_url": "overseas.html", "related_label": "해외특허등록 살펴보기", "source": SOURCE}
+
+
+def valid_article() -> dict:
+    paragraph = "PCT 국제출원만으로 각국의 등록 특허가 생기지 않습니다. 권리를 원하는 국가의 절차와 현재 사업 목표를 나누어 살펴봐야 합니다. " * 6
+    body = ":::takeaway\nPCT 다음에는 권리를 원하는 국가의 절차가 필요합니다.\n국가별 절차의 적용 여부는 실제 출원 상황에 따라 달라집니다. 먼저 목표 국가와 사업 계획을 정리하세요.\n:::\n\n"
+    body += "해외 판매 계획을 세우는 기업이라면 여러 국가에서 보호를 원하는 이유를 먼저 정리할 수 있습니다.\n\n"
+    for number in range(1, 4):
+        body += f"## {number}. 국가단계에서 무엇을 확인할까요?\n\n{paragraph}〔1〕\n\n"
+    body += ":::checklist\n- 권리가 필요한 국가가 정해졌나요?\n- 현지 사업 계획을 정리했나요?\n- 국가별 절차를 확인했나요?\n:::"
+    body += "\n\n## 마무리\n\n사업 목적과 현지 절차를 함께 확인한 뒤 다음 행동을 정합니다. 〔1〕\n"
+    return {
+        "title": "PCT 다음 해외 권리 절차를 어떻게 준비할까요?", "category": "해외특허", "slug": "pct-next-step-guide",
+        "summary": "PCT 이후 목표 국가와 절차를 정리할 때 확인할 사항입니다.",
+        "meta_description": "PCT 국제출원 이후 국가별 특허 절차를 준비할 때 필요한 판단 기준을 살펴봅니다.",
+        "body": body,
+        "sources": [{"title": SOURCE["title"], "organization": SOURCE["organization"], "published": SOURCE["published"], "url": SOURCE["url"], "verified_excerpt": QUOTE}],
+        "claims": [{"claim": f"각국의 심사가 필요합니다 {number}", "source_url": SOURCE["url"], "evidence_quote": QUOTE} for number in range(3)],
     }
-    body += "\n\n".join(f"## {number}. 분류 {number} | 점검할 항목 {number}\n\n{section}\n\n{extras.get(number, '')}" for number in range(1, 6))
-    return {"title": title, "subtitle": "준비 단계의 확인 사항", "description": "특허 준비 시 확인할 항목을 알아봅니다.", "body": body}
 
 
-class DailyColumnTests(unittest.TestCase):
-    def test_valid_article_matches_site_builder(self) -> None:
-        checked = validate_article(article(), ["다른 기존 제목"])
-        document = serialize("2026-10-21", choose_topic("2026-10-21"), checked)
-        with tempfile.TemporaryDirectory(dir=Path(__file__).parent) as directory:
-            path = Path(directory) / "daily-2026-10-21.md"
-            path.write_text(document, encoding="utf-8")
-            metadata, lines = read_article(path)
-        self.assertEqual(metadata["published"], "2026-10-21")
-        self.assertEqual(metadata["layout"], "insight")
-        self.assertEqual(lines[0], "# " + checked["title"])
-        self.assertTrue(metadata["source_1_url"].startswith("https://"))
-        html, toc = render_insight_body(lines)
-        self.assertIn('class="insight-cards"', html)
-        self.assertIn('href="#section-5"', toc)
+class DraftTests(unittest.TestCase):
+    def test_editorial_format_and_direct_evidence(self) -> None:
+        article = evidence.validate_article(valid_article(), TOPIC, SOURCE, [])
+        lines = ["# " + article["title"], "## 핵심 답", *article["body"].splitlines()]
+        body, toc = build_column.render_guide_body(lines)
+        self.assertIn('href="#source-1"', body)
+        self.assertEqual(toc.count('href="#section-'), 3)
 
-    def test_duplicate_title_is_rejected(self) -> None:
-        with self.assertRaisesRegex(ValueError, "already exists"):
-            validate_article(article(), ["출원 전에 무엇을 점검할까요?"])
+    def test_invalid_draft_is_repaired_and_audited(self) -> None:
+        broken = valid_article()
+        broken["body"] = "근거 없는 짧은 글"
+        answers = iter([broken, valid_article(), {"supported": True, "unsupported_claims": []}])
+        generated = []
 
-    def test_short_body_is_rejected(self) -> None:
-        candidate = article()
-        candidate["body"] = "짧은 원고"
-        with self.assertRaisesRegex(ValueError, "Body length"):
-            validate_article(candidate, [])
+        def fake_generate(prompt: str, key: str) -> dict:
+            generated.append(prompt)
+            return next(answers)
 
-    def test_broken_related_page_is_rejected(self) -> None:
-        checked = validate_article(article(), [])
-        document = serialize("2026-10-21", choose_topic("2026-10-21"), checked)
-        document = document.replace("related_url: process.html", "related_url: missing.html")
-        with tempfile.TemporaryDirectory(dir=Path(__file__).parent) as directory:
-            path = Path(directory) / "daily-2026-10-21.md"
-            path.write_text(document, encoding="utf-8")
-            with self.assertRaisesRegex(ValueError, "related_url"):
-                read_article(path)
+        result = evidence.draft_one(date(2026, 10, 22), TOPIC, SOURCE, [], "fake-key", fake_generate)
+        self.assertEqual(result["slug"], "pct-next-step-guide")
+        self.assertEqual(len(generated), 3)
+        self.assertIn("문제로 보류", generated[1])
 
-    def test_missing_insight_block_is_rejected(self) -> None:
-        candidate = article()
-        candidate["body"] = candidate["body"].replace(":::takeaway", ":::other")
-        with self.assertRaisesRegex(ValueError, "takeaway"):
-            validate_article(candidate, [])
+    def test_unsupported_number_is_rejected(self) -> None:
+        item = valid_article()
+        item["body"] = item["body"].replace("사업 목적과", "999개월 뒤 사업 목적과")
+        with self.assertRaisesRegex(ValueError, "Unverified number"):
+            evidence.validate_article(item, TOPIC, SOURCE, [])
 
-    def test_topic_thumbnail_is_photographic_webp(self) -> None:
-        self.assertEqual(theme_for("특허출원 전 아이디어 공개, 안전할까요?"), "disclosure")
-        self.assertEqual(theme_for("PCT 국제출원 준비"), "global")
-        path = create_thumbnail("daily-2026-10-21", "특허출원 전 아이디어 공개, 안전할까요?", "국내특허")
-        self.assertEqual(path, "assets/daily-2026-10-21-thumb.webp")
-        with Image.open(Path(__file__).resolve().parents[1] / "dist" / path) as photo:
-            self.assertEqual(photo.size, (1200, 600))
+
+class PublicationTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temp = tempfile.TemporaryDirectory(dir=Path(__file__).resolve().parents[1])
+        self.addCleanup(self.temp.cleanup)
+        root = Path(self.temp.name)
+        dist = root / "dist"
+        (dist / "articles").mkdir(parents=True)
+        (dist / "assets").mkdir()
+        (dist / "assets" / "pct-column-hero.webp").write_bytes(b"test")
+        (dist / "overseas.html").write_text("ok", encoding="utf-8")
+        automation = root / "automation"
+        queue = automation / "queue"
+        queue.mkdir(parents=True)
+        self.dist, self.automation, self.queue = dist, automation, queue
+        self.patches = [
+            patch.object(publisher, "DIST", dist), patch.object(publisher, "AUTOMATION", automation),
+            patch.object(publisher, "QUEUE", queue), patch.object(publisher, "STATE_PATH", automation / "state.json"),
+            patch.object(build_column, "DIST", dist), patch.object(evidence, "DIST", dist),
+            patch.object(evidence, "QUEUE", queue), patch.object(publisher, "build_columns", lambda: None),
+            patch.object(publisher, "build_sitemap", lambda: None),
+            patch.object(publisher, "create_thumbnail", self.fake_thumbnail),
+        ]
+        for active in self.patches:
+            active.start()
+            self.addCleanup(active.stop)
+        self.item_path = queue / "prepared.json"
+        self.item = {
+            "status": "ready", "created_at": "2026-10-21T06:00:00+09:00",
+            "topic_key": "pct-national-phase", "article": valid_article(), "source": SOURCE,
+            "article_path": "", "target_date": "", "attempt_slots": [], "last_error": "",
+        }
+        publisher.write_json(self.item_path, self.item)
+
+    def fake_thumbnail(self, slug: str, title: str, category: str, summary: str) -> str:
+        name = f"assets/{slug}-thumb.webp"
+        (self.dist / name).write_bytes(b"RIFFtestWEBP")
+        return name
+
+    def test_normal_publication_requires_live_site(self) -> None:
+        day = date(2026, 10, 22)
+        record = publisher.stage(day, publisher.SLOTS[0], visibility=lambda *a: False, source_check=lambda *a: True)
+        self.assertEqual(record["status"], "deploying")
+        self.assertEqual(len(list((self.dist / "articles").glob("*.md"))), 1)
+        result = publisher.verify(day, max_wait_seconds=1, visibility=lambda *a: True)
+        self.assertEqual(result["status"], "published")
+
+    def test_transient_upload_or_deploy_failure_retries_same_page(self) -> None:
+        day = date(2026, 10, 22)
+        publisher.stage(day, publisher.SLOTS[0], visibility=lambda *a: False, source_check=lambda *a: True)
+        publisher.verify(day, max_wait_seconds=1, visibility=lambda *a: False)
+        publisher.stage(day, publisher.SLOTS[1], visibility=lambda *a: False, source_check=lambda *a: True)
+        self.assertEqual(len(list((self.dist / "articles").glob("*.md"))), 1)
+        self.assertEqual(len(publisher.load_state()["days"][day.isoformat()]["attempt_slots"]), 2)
+
+    def test_five_failures_keep_draft_for_next_day(self) -> None:
+        first = date(2026, 10, 22)
+        for slot in publisher.SLOTS:
+            publisher.stage(first, slot, visibility=lambda *a: False, source_check=lambda *a: True)
+            publisher.verify(first, max_wait_seconds=1, visibility=lambda *a: False)
+        self.assertEqual(publisher.load_state()["days"][first.isoformat()]["status"], "failed")
+        next_day = date(2026, 10, 23)
+        publisher.stage(next_day, publisher.SLOTS[0], visibility=lambda *a: False, source_check=lambda *a: True)
+        self.assertEqual(len(list((self.dist / "articles").glob("*.md"))), 1)
+        path = next((self.dist / "articles").glob("*.md"))
+        self.assertEqual(build_column.read_article(path)[0]["published"], "2026-10-23")
+
+    def test_duplicate_attempt_does_not_create_second_article(self) -> None:
+        day = date(2026, 10, 22)
+        publisher.stage(day, publisher.SLOTS[0], visibility=lambda *a: False, source_check=lambda *a: True)
+        publisher.verify(day, max_wait_seconds=1, visibility=lambda *a: True)
+        publisher.stage(day, publisher.SLOTS[1], visibility=lambda *a: True, source_check=lambda *a: True)
+        self.assertEqual(len(list((self.dist / "articles").glob("*.md"))), 1)
+        self.assertEqual(len(publisher.load_state()["days"][day.isoformat()]["attempt_slots"]), 1)
+
+    def test_failed_topic_is_replaced_before_queueing(self) -> None:
+        self.item_path.unlink()
+        attempts = []
+
+        def fake_drafter(day, topic, source, recent, key):
+            attempts.append(topic["key"])
+            if len(attempts) == 1:
+                raise ValueError("evidence too weak")
+            article = valid_article()
+            article["category"] = topic["category"]
+            return article
+
+        publisher.prepare(date(2026, 10, 22), dry_run=True, api_key="fake", fetcher=lambda _: SOURCE, drafter=fake_drafter)
+        self.assertEqual(len(attempts), 2)
+        self.assertEqual(len(list(self.queue.glob("*.json"))), 0)
 
 
 if __name__ == "__main__":

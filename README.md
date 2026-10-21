@@ -46,12 +46,12 @@ source_1_url: https://example.com/source
 
 ## 매일 칼럼 자동 게시
 
-GitHub 저장소의 비밀값 `GEMINI_API_KEY`를 사용합니다. `.github/workflows/daily-column.yml`이 주말과 공휴일을 포함해 한국 시간 매일 오전 8시 17분과 10시 17분에 실행됩니다. 첫 실행이 성공하면 두 번째 실행은 이미 생성된 날짜 파일을 확인하고 종료합니다. GitHub Actions의 예약 실행은 지연되거나 누락될 수 있어 두 번 기회를 둔 것이며, 하루 한 편만 만들도록 `daily-YYYY-MM-DD.md` 파일 이름으로 중복을 막습니다.
+원고 지침은 `automation/column_prompt_ko.txt`, 공식자료와 후보 질문은 `automation/topics.json`에서 수정합니다. `scripts/column_automation.py`가 공식 기관의 실제 웹페이지 본문을 수집하고 최근 30일 제목·요약과 문체 참고 원고를 Gemini에 전달합니다. JSON 필드, 글의 구성과 길이, 주제 중복, 출처 URL, 원문 인용 구절을 검사합니다. 검증에 실패하면 한 번 수정 요청을 보내고, 재검증에도 실패하면 다음 후보 질문으로 넘어갑니다. 이 검사와 별도로 Gemini의 주장 검토를 한 번 더 수행하지만, 법률적 정확성을 완전히 보증하지는 못하므로 게시 후 사람이 확인해야 합니다. API 키는 GitHub 비밀값 `GEMINI_API_KEY`로만 전달합니다.
 
-Gemini 3.5 Flash가 공개된 공식 자료를 바탕으로 일반 정보 칼럼을 작성합니다. 일시적인 서버 오류에는 재시도하고, 계속 실패하면 무료 등급의 Gemini 3.5 Flash-Lite로 한 번 대체 실행합니다. 생성기는 글 길이, 형식, 중복 제목을 검사한 뒤 `dist/articles/`에 저장합니다. 이후 칼럼 페이지·목록·사이트맵을 만들고 `main`에 커밋하면 Cloudflare Pages가 자동 배포합니다. API 오류나 품질 검사 실패 시 커밋하지 않고 Actions 실행이 실패로 표시됩니다. 자동 작성 원고는 법률·기술 내용을 모두 보증할 수 없으므로 게시 후 사람이 사실관계를 검토해야 합니다. Gemini 무료 등급의 실제 요청 한도와 모델 제공 여부는 Google AI Studio 계정 설정에 따릅니다.
+`.github/workflows/prepare-column.yml`은 주말·공휴일을 포함한 매일 **한국시간 05:17·07:17**에 실행하여 검증된 원고 2편을 `automation/queue/`에 보관합니다. 기존에 준비된 원고가 2편이면 추가로 생성하지 않습니다. 수동 실행의 `dry_run`은 실제 Gemini 호출과 검증만 하고 저장하거나 게시하지 않습니다.
 
-2026-10-21 칼럼부터 `layout: insight` 구조를 사용합니다. 칼럼의 첫머리는 `:::takeaway` 핵심 요약, 본문은 번호가 붙은 다섯 구역으로 이루어집니다. 본문 안의 `:::quote`, `:::cards`, `:::steps`, `:::checklist` 블록은 각각 강조 문구·세 칸 카드·순서 목록·점검 목록으로 표시됩니다. `scripts/build_column.py`가 이 형식을 렌더링하며, 자동 생성 지시는 `scripts/publish_daily_column.py`의 `prompt_for()`에 있습니다. 오늘 글의 내용은 `dist/articles/daily-2026-10-21.md`에서 수정할 수 있습니다. 기존 PCT 칼럼은 현재 형식을 유지합니다.
+`.github/workflows/daily-column.yml`은 매일 **한국시간 08:00, 08:30, 09:00, 09:30, 10:00**에 실행합니다. 가장 오래된 실패 원고를 우선하고 하루에 새 글 1편만 게시합니다. 같은 원고를 다시 시도할 때 별도 글을 추가하지 않습니다. 원고·썸네일·개별 페이지·목록·사이트맵을 GitHub `main`에 올리면 Cloudflare Pages가 배포하며, 자동화는 실제 공개 도메인의 글 제목, 목록 데이터, 목록 화면의 버전과 썸네일이 확인되어야 성공으로 기록합니다. 5회 실패한 원고는 상태와 함께 보존되어 다음 날 우선 대상이 됩니다. 출처가 변경된 원고는 게시하지 않습니다.
 
-새 자동 칼럼은 `scripts/make_thumbnail.py`가 제목에서 주제를 판별하여 브랜드 색상의 SVG 썸네일을 함께 만듭니다. 외부 이미지 생성 API나 추가 패키지가 필요하지 않으며 `dist/assets/daily-YYYY-MM-DD-thumb.svg`로 저장됩니다. 원고의 `thumbnail:` 항목이 이 파일을 가리키고, 칼럼 목록 카드에 표시됩니다. 이미지 생성에 실패하면 발행 작업도 실패하여 썸네일 없는 새 칼럼이 공개되지 않습니다.
+새 원고는 `layout: guide`로 렌더링됩니다. 제목 아래에 핵심 답, 3~4개 본문 절, 3~5개 확인 항목, 마무리와 실제 사용한 공식자료가 표시됩니다. `scripts/make_thumbnail.py`는 기존 사이트의 주제별 사진을 활용해 WebP 썸네일을 만듭니다. 기존 수동 원고와 2026-10-21 칼럼의 레이아웃은 그대로 유지됩니다.
 
-Actions의 **Publish daily patent column → Run workflow**에서 `dry_run`을 켜면 Gemini 호출과 원고 검증만 하고 공개하지 않습니다. 끄면 해당 날짜의 글 한 편을 게시합니다. 비밀값은 로그에 출력하지 않습니다. 기존 특허정보검색 화면은 해외특허등록 안내 페이지(`overseas.html`)로 대체했습니다. 기존 `search.html` 주소는 새 페이지로 이동합니다.
+로컬 점검은 `python -m unittest discover -s tests -v`, `python scripts/publish_daily_column.py verify-existing`으로 실행합니다. Actions에서 수동으로 **Publish verified daily patent column**을 실행하면 오늘 글의 공개 상태만 확인합니다. 예약 작업은 GitHub Actions의 실제 시작 시각에 따라 지연·누락될 수 있으므로 08:00 정각 게시를 보증하지는 않습니다. GitHub 반영과 Cloudflare 배포가 정상이어도 공개 사이트 확인에 실패하면 게시 성공으로 기록하지 않습니다.

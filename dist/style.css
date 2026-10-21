@@ -330,6 +330,9 @@ html,body,button,input,select,textarea{font-family:'Pretendard','Malgun Gothic',
 @media(max-width:520px){.column-hero{background-image:linear-gradient(90deg,#f6fafbf5,#f6fafbdc),var(--column-hero-image)}}
 
 /* Editorial column layout. The shared header and footer remain unchanged. */
+.column-body .source-ref{color:#2383a5;font-weight:700;text-decoration:none;white-space:nowrap}
+.column-body .source-ref:hover{text-decoration:underline}
+.column-sources li p{font-size:12px;line-height:1.7;color:#77909a;margin:6px 0 0}
 .column-insight .column-hero{min-height:430px;padding:54px 0 62px;background-size:cover,auto 135%;background-position:center,right center}
 .column-insight .column-hero .breadcrumb{margin-bottom:42px}
 .column-insight .column-hero h1{max-width:610px;font-size:clamp(36px,3.5vw,51px);line-height:1.25;margin-bottom:24px}

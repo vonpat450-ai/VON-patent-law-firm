@@ -178,6 +178,83 @@ def render_insight_body(lines: list[str]) -> tuple[str, str]:
     return "\n".join(blocks), "".join(toc)
 
 
+def render_guide_body(lines: list[str]) -> tuple[str, str]:
+    """Render the evidence-linked 3–4 section format for automated columns."""
+    blocks: list[str] = []
+    toc: list[str] = []
+    paragraph: list[str] = []
+    block_name: str | None = None
+    block_lines: list[str] = []
+    section_open = False
+
+    def linked(value: str) -> str:
+        return inline(value).replace("〔1〕", '<a class="source-ref" href="#source-1" aria-label="참고 자료 1">〔1〕</a>')
+
+    def flush_paragraph() -> None:
+        if paragraph:
+            blocks.append(f'<p>{linked(" ".join(paragraph))}</p>')
+            paragraph.clear()
+
+    def flush_block() -> None:
+        nonlocal block_name
+        values = [item.strip() for item in block_lines if item.strip()]
+        if block_name == "takeaway":
+            if len(values) < 2:
+                raise ValueError("guide takeaway needs a title and answer")
+            # The same answer is printed directly below the H1 in the hero.
+        elif block_name == "checklist":
+            if not 3 <= len(values) <= 5 or any(not value.startswith("- ") for value in values):
+                raise ValueError("guide checklist needs 3–5 bullet items")
+            items = "".join(f'<li>{linked(value[2:])}</li>' for value in values)
+            blocks.append('<div class="insight-checklist"><h4>내 상황 확인 항목</h4><ul>' + items + '</ul></div>')
+        else:
+            raise ValueError("unknown guide block")
+        block_lines.clear()
+        block_name = None
+
+    for line in lines[2:]:
+        value = line.strip()
+        if value.startswith(":::"):
+            flush_paragraph()
+            if block_name is None and value in {":::takeaway", ":::checklist"}:
+                block_name = value[3:]
+            elif block_name is not None and value == ":::":
+                flush_block()
+            else:
+                raise ValueError("invalid guide block")
+        elif block_name is not None:
+            block_lines.append(value)
+        elif value.startswith("## "):
+            flush_paragraph()
+            if section_open:
+                blocks.append("</section>")
+            heading = value[3:]
+            match = re.fullmatch(r"([1-4])\. (.+)", heading)
+            if match:
+                number, title = match.groups()
+                section_id = f"section-{number}"
+                toc.append(f'<li><a href="#{section_id}"><span>{int(number):02d}</span>{escape(title)}</a></li>')
+                blocks.append(f'<section class="insight-part" id="{section_id}"><span class="insight-part-label">{int(number):02d} · 핵심 질문</span><h2>{escape(title)}</h2>')
+            elif heading in {"마무리", "FAQ"}:
+                blocks.append(f'<section class="insight-part"><h2>{escape(heading)}</h2>')
+            else:
+                raise ValueError("invalid guide section heading")
+            section_open = True
+        elif value.startswith("### "):
+            flush_paragraph()
+            blocks.append(f'<h3>{escape(value[4:])}</h3>')
+        elif not value:
+            flush_paragraph()
+        else:
+            paragraph.append(value)
+    if block_name:
+        raise ValueError("unclosed guide block")
+    flush_paragraph()
+    if section_open:
+        blocks.append("</section>")
+    return "\n".join(blocks), "".join(toc)
+
+
 def sources_html(metadata: dict[str, str]) -> str:
     links = []
     for number in range(1, 11):
@@ -186,7 +263,8 @@ def sources_html(metadata: dict[str, str]) -> str:
         if label and url:
             if not url.startswith("https://"):
                 raise ValueError("source URLs must use https")
-            links.append(f'<li><a href="{escape(url, quote=True)}" target="_blank" rel="noopener noreferrer">{escape(label)} ↗</a></li>')
+            note = metadata.get(f"source_{number}_note", "")
+            links.append(f'<li id="source-{number}"><a href="{escape(url, quote=True)}" target="_blank" rel="noopener noreferrer">{escape(label)} ↗</a>{f"<p>{escape(note)}</p>" if note else ""}</li>')
     return ('<section class="column-sources" aria-labelledby="column-sources-title"><h2 id="column-sources-title">참고 자료</h2><ul>' + "".join(links) + "</ul></section>") if links else ""
 
 
@@ -195,8 +273,9 @@ def render_page(path: Path, metadata: dict[str, str], lines: list[str]) -> dict[
     category = metadata.get("category", "특허지식")
     description = metadata.get("description", subtitle)
     hero = metadata.get("hero", "assets/knowledge-hero.png")
-    insight = metadata.get("layout") == "insight"
-    body, toc = render_insight_body(lines) if insight else render_body(lines)
+    layout = metadata.get("layout")
+    insight = layout in {"insight", "guide"}
+    body, toc = render_guide_body(lines) if layout == "guide" else render_insight_body(lines) if insight else render_body(lines)
     related_url = metadata.get("related_url", "")
     related_label = metadata.get("related_label", "더 알아보기")
     if related_url and not re.fullmatch(r"[a-z-]+\.html", related_url):
@@ -256,7 +335,7 @@ def render_page(path: Path, metadata: dict[str, str], lines: list[str]) -> dict[
     target = DIST / f"column-{path.stem}.html"
     target.write_text(document, encoding="utf-8")
     print(f"Wrote {target.name}")
-    return {"title": title, "subtitle": subtitle, "category": category, "published": metadata["published"], "href": target.name, "thumbnail": metadata.get("thumbnail", "")}
+    return {"title": title, "subtitle": metadata.get("list_summary", subtitle), "category": category, "published": metadata["published"], "href": target.name, "thumbnail": metadata.get("thumbnail", "")}
 
 
 def main() -> None:
