@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import date
 from html import escape
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -262,7 +263,17 @@ def main() -> None:
     listing = [render_page(path, *read_article(path)) for path in sorted((DIST / "articles").glob("*.md"))]
     listing.sort(key=lambda item: (item["published"], item["href"]), reverse=True)
     data = json.dumps(listing, ensure_ascii=False, separators=(",", ":")).replace("\u2028", "\\u2028").replace("\u2029", "\\u2029")
-    (DIST / "articles-data.js").write_text(f"window.VON_ARTICLES={data};\n", encoding="utf-8")
+    listing_script = f"window.VON_ARTICLES={data};\n"
+    (DIST / "articles-data.js").write_text(listing_script, encoding="utf-8")
+    # A new content hash prevents browsers from reusing yesterday's article list.
+    version = hashlib.sha256(listing_script.encode("utf-8")).hexdigest()[:12]
+    for name in ("index.html", "knowledge.html"):
+        page = DIST / name
+        html = page.read_text(encoding="utf-8")
+        updated, count = re.subn(r'articles-data\.js(?:\?v=[a-zA-Z0-9-]+)?', f'articles-data.js?v={version}', html)
+        if count != 1:
+            raise ValueError(f"{name}: expected one article data script")
+        page.write_text(updated, encoding="utf-8")
     print(f"Indexed {len(listing)} columns")
 
 

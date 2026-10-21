@@ -45,7 +45,7 @@ jobs:
       - name: Publish changed files
         if: ${{ inputs.dry_run != true }}
         run: |
-          git add dist/articles/ dist/assets/daily-*-thumb.webp dist/column-*.html dist/articles-data.js dist/sitemap.xml
+          git add dist/articles/ dist/assets/daily-*-thumb.webp dist/column-*.html dist/articles-data.js dist/index.html dist/knowledge.html dist/sitemap.xml
           if git diff --cached --quiet; then
             echo "Today's column is already published."
             exit 0
