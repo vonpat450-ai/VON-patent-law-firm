@@ -18,6 +18,7 @@ from urllib import error, request
 from zoneinfo import ZoneInfo
 
 from build_column import read_article
+from make_thumbnail import create_thumbnail, render_thumbnail
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -171,12 +172,14 @@ def validate_article(article: dict[str, str], titles: list[str]) -> dict[str, st
     return article
 
 
-def serialize(today: str, topic: tuple[str, ...], article: dict[str, str]) -> str:
+def serialize(today: str, topic: tuple[str, ...], article: dict[str, str], thumbnail: str = "") -> str:
     category, _, _, source_url, source_label, related_url, related_label = topic
+    thumbnail_line = f"thumbnail: {thumbnail}\n" if thumbnail else ""
     # Single-line metadata fields are checked before serialization.
     return (
         f"---\npublished: {today}\ncategory: {category}\nlayout: insight\n"
         f"tags: {category} · 특허 전략\nhero: assets/pct-column-hero.webp\n"
+        f"{thumbnail_line}"
         f"description: {article['description']}\n"
         f"related_url: {related_url}\nrelated_label: {related_label}\n"
         f"source_1_label: {source_label}\nsource_1_url: {source_url}\n"
@@ -199,10 +202,12 @@ def main() -> int:
     titles = existing_titles()
     topic = choose_topic(today)
     article = validate_article(generate(prompt_for(today, topic, titles), api_key), titles)
-    document = serialize(today, topic, article)
+    render_thumbnail(article["title"], topic[0], article["description"])
     if args.dry_run:
         print(f"Dry run passed: {article['title']} ({len(article['body'])} characters)")
         return 0
+    thumbnail = create_thumbnail(f"daily-{today}", article["title"], topic[0], article["description"])
+    document = serialize(today, topic, article, thumbnail)
     target.write_text(document, encoding="utf-8")
     read_article(target)  # Confirm the site's real renderer accepts the new source.
     print(f"Created {target.name}: {article['title']}")

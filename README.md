@@ -52,4 +52,6 @@ Gemini 3.5 Flash가 공개된 공식 자료를 바탕으로 일반 정보 칼럼
 
 2026-10-21 칼럼부터 `layout: insight` 구조를 사용합니다. 칼럼의 첫머리는 `:::takeaway` 핵심 요약, 본문은 번호가 붙은 다섯 구역으로 이루어집니다. 본문 안의 `:::quote`, `:::cards`, `:::steps`, `:::checklist` 블록은 각각 강조 문구·세 칸 카드·순서 목록·점검 목록으로 표시됩니다. `scripts/build_column.py`가 이 형식을 렌더링하며, 자동 생성 지시는 `scripts/publish_daily_column.py`의 `prompt_for()`에 있습니다. 오늘 글의 내용은 `dist/articles/daily-2026-10-21.md`에서 수정할 수 있습니다. 기존 PCT 칼럼은 현재 형식을 유지합니다.
 
+새 자동 칼럼은 `scripts/make_thumbnail.py`가 제목에서 주제를 판별하여 브랜드 색상의 SVG 썸네일을 함께 만듭니다. 외부 이미지 생성 API나 추가 패키지가 필요하지 않으며 `dist/assets/daily-YYYY-MM-DD-thumb.svg`로 저장됩니다. 원고의 `thumbnail:` 항목이 이 파일을 가리키고, 칼럼 목록 카드에 표시됩니다. 이미지 생성에 실패하면 발행 작업도 실패하여 썸네일 없는 새 칼럼이 공개되지 않습니다.
+
 Actions의 **Publish daily patent column → Run workflow**에서 `dry_run`을 켜면 Gemini 호출과 원고 검증만 하고 공개하지 않습니다. 끄면 해당 날짜의 글 한 편을 게시합니다. 비밀값은 로그에 출력하지 않습니다. 기존 특허정보검색 화면은 해외특허등록 안내 페이지(`overseas.html`)로 대체했습니다. 기존 `search.html` 주소는 새 페이지로 이동합니다.
