@@ -1,5 +1,5 @@
 {
-  "status": "ready",
+  "status": "deploying",
   "created_at": "2026-10-21T16:34:51.792559+09:00",
   "topic_key": "overseas-protection",
   "article": {
@@ -45,8 +45,10 @@
     "body_sha256": "44d42f75b5942c38fd99fb1454434dbbd64440064a0ab6a8dbefd9c4479dc3ea",
     "checked_at": "2026-10-21T07:34:19"
   },
-  "article_path": "",
-  "target_date": "",
-  "attempt_slots": [],
+  "article_path": "articles/daily-2026-10-22-first-steps-for-foreign-patent-protection.md",
+  "target_date": "2026-10-22",
+  "attempt_slots": [
+    "0 8 * * *"
+  ],
   "last_error": ""
 }
