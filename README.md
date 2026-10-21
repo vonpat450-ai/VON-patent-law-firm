@@ -44,6 +44,10 @@ source_1_url: https://example.com/source
 
 로컬에서는 `python scripts/build_column.py`와 `python scripts/generate_sitemap.py`를 순서대로 실행합니다. 생성기는 모든 원고로 개별 칼럼 페이지와 `dist/articles-data.js` 목록을 만듭니다. 특허지식에는 모든 칼럼이 최신 게시일 순으로, 메인에는 최신 3편이 표시됩니다. GitHub의 `main` 브랜치에 원고를 올리면 `.github/workflows/build-columns.yml`이 같은 작업을 자동으로 실행하고 Cloudflare 배포로 이어집니다. 같은 제목이라도 파일 이름은 서로 달라야 합니다.
 
-## 보류 중인 작업
+## 매일 칼럼 자동 게시
 
-Gemini를 이용한 칼럼 원고의 매일 자동 작성은 아직 연결되지 않았습니다. 기존 특허정보검색 화면은 해외특허등록 안내 페이지(`overseas.html`)로 대체했습니다. 기존 `search.html` 주소는 새 페이지로 이동합니다.
+GitHub 저장소의 비밀값 `GEMINI_API_KEY`를 사용합니다. `.github/workflows/daily-column.yml`이 주말과 공휴일을 포함해 한국 시간 매일 오전 8시 17분과 10시 17분에 실행됩니다. 첫 실행이 성공하면 두 번째 실행은 이미 생성된 날짜 파일을 확인하고 종료합니다. GitHub Actions의 예약 실행은 지연되거나 누락될 수 있어 두 번 기회를 둔 것이며, 하루 한 편만 만들도록 `daily-YYYY-MM-DD.md` 파일 이름으로 중복을 막습니다.
+
+Gemini 2.5 Flash가 공개된 공식 자료를 바탕으로 일반 정보 칼럼을 작성합니다. 생성기는 글 길이, 형식, 중복 제목을 검사한 뒤 `dist/articles/`에 저장합니다. 이후 칼럼 페이지·목록·사이트맵을 만들고 `main`에 커밋하면 Cloudflare Pages가 자동 배포합니다. API 오류나 품질 검사 실패 시 커밋하지 않고 Actions 실행이 실패로 표시됩니다. 자동 작성 원고는 법률·기술 내용을 모두 보증할 수 없으므로 게시 후 사람이 사실관계를 검토해야 합니다. Gemini 무료 등급의 실제 요청 한도와 모델 제공 여부는 Google AI Studio 계정 설정에 따릅니다.
+
+Actions의 **Publish daily patent column → Run workflow**에서 `dry_run`을 켜면 Gemini 호출과 원고 검증만 하고 공개하지 않습니다. 끄면 해당 날짜의 글 한 편을 게시합니다. 비밀값은 로그에 출력하지 않습니다. 기존 특허정보검색 화면은 해외특허등록 안내 페이지(`overseas.html`)로 대체했습니다. 기존 `search.html` 주소는 새 페이지로 이동합니다.

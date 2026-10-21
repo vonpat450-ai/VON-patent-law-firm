@@ -1,0 +1,54 @@
+name: Publish daily patent column
+
+on:
+  schedule:
+    # Two chances each day; the second run exits if today's article exists.
+    - cron: "17 8,10 * * *"
+      timezone: "Asia/Seoul"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Validate Gemini output without publishing"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-daily-column
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Write today's column with Gemini
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            python3 scripts/publish_daily_column.py --dry-run
+          else
+            python3 scripts/publish_daily_column.py
+          fi
+      - name: Build pages and sitemap
+        if: ${{ inputs.dry_run != true }}
+        run: |
+          python3 scripts/build_column.py
+          python3 scripts/generate_sitemap.py
+      - name: Publish changed files
+        if: ${{ inputs.dry_run != true }}
+        run: |
+          git add dist/articles/ dist/column-*.html dist/articles-data.js dist/sitemap.xml
+          if git diff --cached --quiet; then
+            echo "Today's column is already published."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "content: publish daily patent column"
+          git push
