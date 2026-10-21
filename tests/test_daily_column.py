@@ -4,12 +4,12 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
-from xml.etree import ElementTree
+from PIL import Image
 
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from build_column import read_article, render_insight_body  # noqa: E402
-from make_thumbnail import render_thumbnail, theme_for  # noqa: E402
+from make_thumbnail import create_thumbnail, theme_for  # noqa: E402
 from publish_daily_column import choose_topic, serialize, validate_article  # noqa: E402
 
 
@@ -69,12 +69,13 @@ class DailyColumnTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "takeaway"):
             validate_article(candidate, [])
 
-    def test_topic_thumbnail_is_valid_svg(self) -> None:
+    def test_topic_thumbnail_is_photographic_webp(self) -> None:
         self.assertEqual(theme_for("특허출원 전 아이디어 공개, 안전할까요?"), "disclosure")
         self.assertEqual(theme_for("PCT 국제출원 준비"), "global")
-        svg = render_thumbnail("특허출원 전 아이디어 공개, 안전할까요?", "국내특허")
-        self.assertEqual(ElementTree.fromstring(svg).tag, "{http://www.w3.org/2000/svg}svg")
-        self.assertIn('viewBox="0 0 1200 600"', svg)
+        path = create_thumbnail("daily-2026-10-21", "특허출원 전 아이디어 공개, 안전할까요?", "국내특허")
+        self.assertEqual(path, "assets/daily-2026-10-21-thumb.webp")
+        with Image.open(Path(__file__).resolve().parents[1] / "dist" / path) as photo:
+            self.assertEqual(photo.size, (1200, 600))
 
 
 if __name__ == "__main__":

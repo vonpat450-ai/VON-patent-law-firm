@@ -18,7 +18,7 @@ from urllib import error, request
 from zoneinfo import ZoneInfo
 
 from build_column import read_article
-from make_thumbnail import create_thumbnail, render_thumbnail
+from make_thumbnail import create_thumbnail
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -202,7 +202,6 @@ def main() -> int:
     titles = existing_titles()
     topic = choose_topic(today)
     article = validate_article(generate(prompt_for(today, topic, titles), api_key), titles)
-    render_thumbnail(article["title"], topic[0], article["description"])
     if args.dry_run:
         print(f"Dry run passed: {article['title']} ({len(article['body'])} characters)")
         return 0
