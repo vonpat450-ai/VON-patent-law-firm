@@ -1,14 +1,15 @@
 {
   "days": {
     "2026-10-22": {
-      "status": "deploying",
+      "status": "published",
       "attempt_slots": [
         "0 8 * * *"
       ],
       "queue_path": "queue/2026-10-21-overseas-protection-first-steps-for-foreign-patent-protection.json",
       "article_path": "articles/daily-2026-10-22-first-steps-for-foreign-patent-protection.md",
       "last_error": "",
-      "last_attempt_at": "2026-10-22T08:34:01.410410+09:00"
+      "last_attempt_at": "2026-10-22T08:34:01.410410+09:00",
+      "verified_at": "2026-10-22T08:34:24.410187+09:00"
     }
   }
 }
