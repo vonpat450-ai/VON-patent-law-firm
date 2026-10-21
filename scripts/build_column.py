@@ -134,7 +134,7 @@ def render_insight_body(lines: list[str]) -> tuple[str, str]:
             blocks.append(f'<ol class="insight-{directive}">' + "".join(items) + "</ol>")
         elif directive == "checklist":
             items = "".join(f'<li>{inline(value.removeprefix("- "))}</li>' for value in values)
-            blocks.append('<div class="insight-checklist"><h4>출원 전 확인 항목</h4><ul>' + items + '</ul></div>')
+            blocks.append('<div class="insight-checklist"><h4>진행 전 확인 항목</h4><ul>' + items + '</ul></div>')
         else:
             raise ValueError(f"Unknown insight block: {directive}")
         directive_lines.clear()
