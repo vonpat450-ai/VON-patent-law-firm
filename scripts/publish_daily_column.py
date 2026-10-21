@@ -85,13 +85,20 @@ def prompt_for(today: str, topic: tuple[str, ...], titles: list[str]) -> str:
 실제 의뢰인, 개인 정보, 가상의 판례, 출처 없는 인용문을 쓰지 마세요.
 기존 칼럼과 같은 제목이나 같은 논지의 반복을 피하세요. 기존 제목: {json.dumps(titles[-80:], ensure_ascii=False)}
 
-읽기 쉬운 설명형 칼럼을 작성하세요. 본문 첫 문단은 150~250자입니다.
-그 뒤에 번호가 붙은 소제목 4~6개를 쓰고, 소제목마다 250~400자 분량의 설명을 2~3개 문단으로 적으세요.
-전체 본문은 한국어 1600~2800자 정도로 작성하세요. 너무 짧게 요약하지 마세요.
-결론에는 독자가 자신의 상황에서 점검할 항목을 구체적으로 제시하세요.
+읽기 쉬운 설명형 칼럼을 한국어 1600~2800자 정도로 작성하세요. 너무 짧게 요약하지 마세요.
+오늘 칼럼부터 모든 글은 같은 편집 구조를 사용합니다. body의 순서를 반드시 지키세요.
+1. 맨 위에 :::takeaway 블록: 첫 줄은 독자에게 도움이 되는 한 문장 제목, 다음 줄은 2~3문장의 핵심 설명, 끝은 ::: 한 줄.
+2. 두 개의 짧은 도입 문단.
+3. 정확히 다섯 개의 번호별 섹션. 제목 형식은 '## 1. 짧은 분류 | 독자의 질문 또는 행동형 제목'입니다. 번호는 1~5 순서입니다.
+4. 첫 섹션의 설명 문단 뒤에 :::quote 블록. 짧은 핵심 문장 한 개를 넣고 :::로 닫으세요.
+5. 둘째 섹션에 :::cards 블록. '- 카드 제목 | 한 문장 설명' 형식으로 세 항목을 넣고 :::로 닫으세요.
+6. 셋째 섹션에 :::steps 블록. '- 단계 제목 | 한 문장 설명' 형식으로 세 항목을 넣고 :::로 닫으세요.
+7. 넷째 섹션에 :::checklist 블록. '- 점검할 질문' 형식으로 네 항목을 넣고 :::로 닫으세요.
+8. 다섯째 섹션에는 개별 상황에 따른 결론과 주의점을 두 문단으로 쓰세요.
+각 구역의 문단은 구체적이고 서로 반복되지 않아야 합니다. 카드와 목록은 실제 독자가 점검할 수 있는 내용으로 적으세요.
 JSON 객체만 반환하세요. 필드는 title, subtitle, description, body 네 개의 문자열입니다.
 title은 45자 이내, subtitle은 55자 이내, description은 120자 이내입니다.
-body는 첫 머리의 설명 문단으로 시작하고, 각 소제목은 '## 1. ...' 형식의 Markdown으로 씁니다.
+body는 위의 구조와 지정한 ::: 블록 및 Markdown 소제목으로 씁니다.
 본문에는 H1 제목이나 출처 링크를 넣지 마세요. 출처는 별도 참고 자료에 자동으로 붙습니다.
 """
 
@@ -147,12 +154,19 @@ def validate_article(article: dict[str, str], titles: list[str]) -> dict[str, st
     body = article.get("body")
     if not isinstance(body, str) or not 1000 <= len(body.strip()) <= 5500:
         raise ValueError(f"Body length is outside the allowed range: {len(body) if isinstance(body, str) else 0}")
-    if len(re.findall(r"^## \d+\. ", body, flags=re.MULTILINE)) not in range(4, 7):
-        raise ValueError("Body must contain 4–6 numbered sections")
+    headings = re.findall(r"^## (\d+)\. [^|\n]+ \| [^\n]+$", body, flags=re.MULTILINE)
+    if headings != ["1", "2", "3", "4", "5"]:
+        raise ValueError("Body must contain five numbered insight sections")
+    for block in ("takeaway", "quote", "cards", "steps", "checklist"):
+        if body.count(f":::{block}") != 1:
+            raise ValueError(f"Body must contain one {block} block")
     if re.search(r"(?m)^# (?!#)|https?://|\[[^]]+\]\([^)]+\)|<script|</", body, re.I):
         raise ValueError("Body contains unexpected heading, link or markup")
     if article["title"].casefold() in {title.casefold() for title in titles}:
         raise ValueError("A column with this title already exists")
+    # The same parser creates the public page; reject malformed custom blocks now.
+    from build_column import render_insight_body
+    render_insight_body(["# " + article["title"], "## " + article["subtitle"], *body.splitlines()])
     article["body"] = body.strip()
     return article
 
@@ -161,7 +175,8 @@ def serialize(today: str, topic: tuple[str, ...], article: dict[str, str]) -> st
     category, _, _, source_url, source_label, related_url, related_label = topic
     # Single-line metadata fields are checked before serialization.
     return (
-        f"---\npublished: {today}\ncategory: {category}\n"
+        f"---\npublished: {today}\ncategory: {category}\nlayout: insight\n"
+        f"tags: {category} · 특허 전략\nhero: assets/pct-column-hero.webp\n"
         f"description: {article['description']}\n"
         f"related_url: {related_url}\nrelated_label: {related_label}\n"
         f"source_1_label: {source_label}\nsource_1_url: {source_url}\n"

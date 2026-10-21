@@ -7,14 +7,21 @@ import unittest
 
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from build_column import read_article  # noqa: E402
+from build_column import read_article, render_insight_body  # noqa: E402
 from publish_daily_column import choose_topic, serialize, validate_article  # noqa: E402
 
 
 def article(title: str = "출원 전에 무엇을 점검할까요?") -> dict[str, str]:
-    section = "기술의 차이와 공개 범위를 먼저 확인하고, 사안별로 관련 자료를 정리해 상담할 필요가 있습니다. " * 10
-    body = "새로운 기술을 준비할 때는 발명의 특징을 구체적으로 정리하는 것이 도움이 됩니다.\n\n"
-    body += "\n\n".join(f"## {number}. 점검할 항목 {number}\n\n{section}" for number in range(1, 5))
+    section = "기술의 차이와 공개 범위를 먼저 확인하고, 사안별로 관련 자료를 정리해 상담할 필요가 있습니다. " * 5
+    body = ":::takeaway\n출원 전 공개 여부를 확인하세요.\n기술의 핵심을 정리하고 공개 일정을 점검합니다.\n:::\n\n"
+    body += "새로운 기술을 준비할 때는 발명의 특징을 구체적으로 정리하는 것이 도움이 됩니다.\n\n"
+    extras = {
+        1: ":::quote\n먼저 공개 일정을 살펴보세요.\n:::",
+        2: ":::cards\n- 신규성 | 새로운지 확인합니다.\n- 진보성 | 차이를 확인합니다.\n- 이용가능성 | 활용할 수 있는지 확인합니다.\n:::",
+        3: ":::steps\n- 조사 | 비슷한 기술을 찾습니다.\n- 비교 | 차이점을 적습니다.\n- 검토 | 방향을 정합니다.\n:::",
+        4: ":::checklist\n- 공개 날짜가 있나요?\n- 기술을 설명할 수 있나요?\n- 기존 기술과 다른가요?\n- 자료를 정리했나요?\n:::",
+    }
+    body += "\n\n".join(f"## {number}. 분류 {number} | 점검할 항목 {number}\n\n{section}\n\n{extras.get(number, '')}" for number in range(1, 6))
     return {"title": title, "subtitle": "준비 단계의 확인 사항", "description": "특허 준비 시 확인할 항목을 알아봅니다.", "body": body}
 
 
@@ -27,8 +34,12 @@ class DailyColumnTests(unittest.TestCase):
             path.write_text(document, encoding="utf-8")
             metadata, lines = read_article(path)
         self.assertEqual(metadata["published"], "2026-10-21")
+        self.assertEqual(metadata["layout"], "insight")
         self.assertEqual(lines[0], "# " + checked["title"])
         self.assertTrue(metadata["source_1_url"].startswith("https://"))
+        html, toc = render_insight_body(lines)
+        self.assertIn('class="insight-cards"', html)
+        self.assertIn('href="#section-5"', toc)
 
     def test_duplicate_title_is_rejected(self) -> None:
         with self.assertRaisesRegex(ValueError, "already exists"):
@@ -49,6 +60,12 @@ class DailyColumnTests(unittest.TestCase):
             path.write_text(document, encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "related_url"):
                 read_article(path)
+
+    def test_missing_insight_block_is_rejected(self) -> None:
+        candidate = article()
+        candidate["body"] = candidate["body"].replace(":::takeaway", ":::other")
+        with self.assertRaisesRegex(ValueError, "takeaway"):
+            validate_article(candidate, [])
 
 
 if __name__ == "__main__":

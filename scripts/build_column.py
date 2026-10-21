@@ -97,6 +97,86 @@ def render_body(lines: list[str]) -> tuple[str, str]:
     return "\n".join(blocks), toc
 
 
+def render_insight_body(lines: list[str]) -> tuple[str, str]:
+    """Render the editorial column format used by current and future daily posts."""
+    blocks: list[str] = []
+    toc: list[str] = []
+    paragraph: list[str] = []
+    section_open = False
+    directive: str | None = None
+    directive_lines: list[str] = []
+
+    def flush_paragraph() -> None:
+        if paragraph:
+            blocks.append(f'<p>{inline(" ".join(paragraph))}</p>')
+            paragraph.clear()
+
+    def flush_directive() -> None:
+        nonlocal directive
+        if directive is None:
+            return
+        values = [value.strip() for value in directive_lines if value.strip()]
+        if directive == "takeaway":
+            if len(values) < 2:
+                raise ValueError("takeaway needs a title and explanation")
+            blocks.append('<div class="insight-takeaway"><span>먼저 알아둘 점</span>'
+                          f'<h2>{inline(values[0])}</h2><p>{inline(" ".join(values[1:]))}</p></div>')
+        elif directive == "quote":
+            blocks.append(f'<blockquote class="insight-quote">{inline(" ".join(values))}</blockquote>')
+        elif directive in {"cards", "steps"}:
+            items = []
+            for index, value in enumerate(values, 1):
+                parts = [part.strip() for part in value.removeprefix("- ").split(" | ", 1)]
+                if len(parts) != 2 or not all(parts):
+                    raise ValueError(f"{directive} items need 'title | explanation'")
+                items.append(f'<li><span>{index:02d}</span><div><h4>{inline(parts[0])}</h4><p>{inline(parts[1])}</p></div></li>')
+            blocks.append(f'<ol class="insight-{directive}">' + "".join(items) + "</ol>")
+        elif directive == "checklist":
+            items = "".join(f'<li>{inline(value.removeprefix("- "))}</li>' for value in values)
+            blocks.append('<div class="insight-checklist"><h4>출원 전 확인 항목</h4><ul>' + items + '</ul></div>')
+        else:
+            raise ValueError(f"Unknown insight block: {directive}")
+        directive_lines.clear()
+        directive = None
+
+    for line in lines[2:]:
+        value = line.strip()
+        if value.startswith(":::"):
+            flush_paragraph()
+            if directive is None:
+                directive = value[3:]
+                if directive not in {"takeaway", "quote", "cards", "steps", "checklist"}:
+                    raise ValueError(f"Unknown insight block: {directive}")
+            elif value == ":::":
+                flush_directive()
+            else:
+                raise ValueError("Close the insight block before opening another")
+        elif directive is not None:
+            directive_lines.append(value)
+        elif value.startswith("## "):
+            flush_paragraph()
+            if section_open:
+                blocks.append("</section>")
+            match = re.fullmatch(r"(\d+)\. ([^|]+) \| (.+)", value[3:])
+            if not match:
+                raise ValueError("Insight headings need '## 1. label | title'")
+            number, label, heading = match.groups()
+            section_id = f"section-{len(toc) + 1}"
+            toc.append(f'<li><a href="#{section_id}"><span>{int(number):02d}</span>{escape(heading.strip())}</a></li>')
+            blocks.append(f'<section class="insight-part" id="{section_id}"><span class="insight-part-label">{int(number):02d} · {escape(label.strip())}</span><h2>{escape(heading.strip())}</h2>')
+            section_open = True
+        elif not value:
+            flush_paragraph()
+        else:
+            paragraph.append(value)
+    if directive is not None:
+        raise ValueError("Insight block is not closed")
+    flush_paragraph()
+    if section_open:
+        blocks.append("</section>")
+    return "\n".join(blocks), "".join(toc)
+
+
 def sources_html(metadata: dict[str, str]) -> str:
     links = []
     for number in range(1, 11):
@@ -114,12 +194,20 @@ def render_page(path: Path, metadata: dict[str, str], lines: list[str]) -> dict[
     category = metadata.get("category", "특허지식")
     description = metadata.get("description", subtitle)
     hero = metadata.get("hero", "assets/knowledge-hero.png")
-    body, toc = render_body(lines)
+    insight = metadata.get("layout") == "insight"
+    body, toc = render_insight_body(lines) if insight else render_body(lines)
     related_url = metadata.get("related_url", "")
     related_label = metadata.get("related_label", "더 알아보기")
     if related_url and not re.fullmatch(r"[a-z-]+\.html", related_url):
         raise ValueError(f"{path.name}: related_url must be a local HTML page")
     related = f'<a class="column-sidebar-link" href="{escape(related_url, quote=True)}">{escape(related_label)} <span aria-hidden="true">↗</span></a>' if related_url else ""
+    bottom = '' if insight else '''<section class="column-bottom">
+        <div class="container column-bottom-inner">
+          <div><span>특허 상담</span><h2>현재 상황에 맞는 특허 전략을<br>함께 검토해 보세요.</h2><p>출원 국가와 기술의 진행 상황을 알려주시면 상담 방향을 안내해 드립니다.</p></div>
+          <a class="btn btn-primary" href="contact.html">상담 신청 <span aria-hidden="true">→</span></a>
+        </div>
+      </section>
+      <div class="container column-back"><a href="knowledge.html">← 특허지식 목록으로</a></div>'''
     document = f'''<!doctype html>
 <html lang="ko">
 <head>
@@ -132,9 +220,9 @@ def render_page(path: Path, metadata: dict[str, str], lines: list[str]) -> dict[
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png?v=3">
   <link rel="shortcut icon" href="assets/favicon.ico?v=3">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon-180.png?v=3">
-  <link rel="stylesheet" href="style.css?v=columns-1">
+  <link rel="stylesheet" href="style.css?v=columns-2">
 </head>
-<body data-page="column">
+<body data-page="column" class="{'column-insight' if insight else ''}">
   <div id="app"></div>
   <template id="column-content">
     <main>
@@ -144,30 +232,26 @@ def render_page(path: Path, metadata: dict[str, str], lines: list[str]) -> dict[
           <span class="column-kicker">VON PATENT INSIGHT · {escape(category)}</span>
           <h1>{escape(title)}</h1>
           <p>{escape(subtitle)}</p>
+          {f'<div class="insight-hero-tags">{escape(metadata.get("tags", category))}</div>' if insight else ''}
         </div>
       </section>
       <section class="column-section">
         <div class="container column-layout">
           <aside class="column-sidebar" aria-label="칼럼 목차">
-            <details class="column-toc" open><summary>이 글의 목차</summary><ol>{toc}</ol></details>
-            {related}
+            <details class="column-toc" open><summary>{'이 글에서 살펴볼 내용' if insight else '이 글의 목차'}</summary><ol>{toc}</ol>{'<p class="insight-toc-note">필요한 항목부터 읽어도 좋습니다. 전체 흐름을 이해할 수 있도록 정리했습니다.</p>' if insight else ''}</details>
+            {'' if insight else related}
           </aside>
           <article class="column-body">{body}{sources_html(metadata)}</article>
         </div>
       </section>
-      <section class="column-bottom">
-        <div class="container column-bottom-inner">
-          <div><span>특허 상담</span><h2>현재 상황에 맞는 특허 전략을<br>함께 검토해 보세요.</h2><p>출원 국가와 기술의 진행 상황을 알려주시면 상담 방향을 안내해 드립니다.</p></div>
-          <a class="btn btn-primary" href="contact.html">상담 신청 <span aria-hidden="true">→</span></a>
-        </div>
-      </section>
-      <div class="container column-back"><a href="knowledge.html">← 특허지식 목록으로</a></div>
+      {bottom}
     </main>
   </template>
-  <script src="app.js?v=columns-1" defer></script>
+  <script src="app.js?v=columns-2" defer></script>
 </body>
 </html>
 '''
+    document = "\n".join(line.rstrip() for line in document.splitlines()) + "\n"
     target = DIST / f"column-{path.stem}.html"
     target.write_text(document, encoding="utf-8")
     print(f"Wrote {target.name}")

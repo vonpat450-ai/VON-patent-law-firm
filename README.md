@@ -50,4 +50,6 @@ GitHub 저장소의 비밀값 `GEMINI_API_KEY`를 사용합니다. `.github/work
 
 Gemini 3.5 Flash가 공개된 공식 자료를 바탕으로 일반 정보 칼럼을 작성합니다. 일시적인 서버 오류에는 재시도하고, 계속 실패하면 무료 등급의 Gemini 3.5 Flash-Lite로 한 번 대체 실행합니다. 생성기는 글 길이, 형식, 중복 제목을 검사한 뒤 `dist/articles/`에 저장합니다. 이후 칼럼 페이지·목록·사이트맵을 만들고 `main`에 커밋하면 Cloudflare Pages가 자동 배포합니다. API 오류나 품질 검사 실패 시 커밋하지 않고 Actions 실행이 실패로 표시됩니다. 자동 작성 원고는 법률·기술 내용을 모두 보증할 수 없으므로 게시 후 사람이 사실관계를 검토해야 합니다. Gemini 무료 등급의 실제 요청 한도와 모델 제공 여부는 Google AI Studio 계정 설정에 따릅니다.
 
+2026-10-21 칼럼부터 `layout: insight` 구조를 사용합니다. 칼럼의 첫머리는 `:::takeaway` 핵심 요약, 본문은 번호가 붙은 다섯 구역으로 이루어집니다. 본문 안의 `:::quote`, `:::cards`, `:::steps`, `:::checklist` 블록은 각각 강조 문구·세 칸 카드·순서 목록·점검 목록으로 표시됩니다. `scripts/build_column.py`가 이 형식을 렌더링하며, 자동 생성 지시는 `scripts/publish_daily_column.py`의 `prompt_for()`에 있습니다. 오늘 글의 내용은 `dist/articles/daily-2026-10-21.md`에서 수정할 수 있습니다. 기존 PCT 칼럼은 현재 형식을 유지합니다.
+
 Actions의 **Publish daily patent column → Run workflow**에서 `dry_run`을 켜면 Gemini 호출과 원고 검증만 하고 공개하지 않습니다. 끄면 해당 날짜의 글 한 편을 게시합니다. 비밀값은 로그에 출력하지 않습니다. 기존 특허정보검색 화면은 해외특허등록 안내 페이지(`overseas.html`)로 대체했습니다. 기존 `search.html` 주소는 새 페이지로 이동합니다.
