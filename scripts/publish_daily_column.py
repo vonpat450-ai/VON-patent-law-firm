@@ -300,7 +300,7 @@ def verify(day: date, *, max_wait_seconds: int = 540, interval_seconds: int = 20
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("mode", choices=("prepare", "stage", "verify", "assert-published", "verify-existing"))
+    parser.add_argument("mode", choices=("prepare", "stage", "stage-now", "verify", "assert-published", "verify-existing"))
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--slot", default="")
     parser.add_argument("--wait-seconds", type=int, default=540)
@@ -310,6 +310,13 @@ def main() -> int:
         prepare(day, dry_run=args.dry_run)
     elif args.mode == "stage":
         stage(day, args.slot)
+    elif args.mode == "stage-now":
+        used = load_state().get("days", {}).get(day.isoformat(), {}).get("attempt_slots", [])
+        available = next((slot for slot in SLOTS if slot not in used), None)
+        if available:
+            stage(day, available)
+        else:
+            print("No publication attempts remain today")
     elif args.mode == "verify":
         verify(day, max_wait_seconds=args.wait_seconds)
     elif args.mode == "assert-published":

@@ -14,10 +14,10 @@ on:
       timezone: "Asia/Seoul"
   workflow_dispatch:
     inputs:
-      check_existing:
-        description: "Read-only check of today's published column"
+      publish_now:
+        description: "Publish today's verified draft now (uses one of five attempts)"
         type: boolean
-        default: true
+        default: false
 
 permissions:
   contents: write
@@ -39,15 +39,20 @@ jobs:
       - name: Install image renderer
         run: python3 -m pip install "Pillow>=10,<13"
       - name: Inspect today's live column without publishing
-        if: ${{ github.event_name == 'workflow_dispatch' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish_now != true }}
         run: python3 scripts/publish_daily_column.py verify-existing
       - name: Stage one queued column or retry its deployment
-        if: ${{ github.event_name == 'schedule' }}
+        if: ${{ github.event_name == 'schedule' || inputs.publish_now == true }}
         env:
           COLUMN_SLOT: ${{ github.event.schedule }}
-        run: python3 scripts/publish_daily_column.py stage --slot "$COLUMN_SLOT"
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            python3 scripts/publish_daily_column.py stage --slot "$COLUMN_SLOT"
+          else
+            python3 scripts/publish_daily_column.py stage-now
+          fi
       - name: Push staged content to GitHub and Cloudflare Pages
-        if: ${{ github.event_name == 'schedule' }}
+        if: ${{ github.event_name == 'schedule' || inputs.publish_now == true }}
         run: |
           git add -A automation/queue/ automation/state.json dist/
           if git diff --cached --quiet; then
@@ -59,10 +64,10 @@ jobs:
           git commit -m "content: stage daily patent column"
           git push
       - name: Check actual site visibility
-        if: ${{ github.event_name == 'schedule' }}
+        if: ${{ github.event_name == 'schedule' || inputs.publish_now == true }}
         run: python3 scripts/publish_daily_column.py verify --wait-seconds 540
       - name: Save verified result or failure state
-        if: ${{ github.event_name == 'schedule' }}
+        if: ${{ github.event_name == 'schedule' || inputs.publish_now == true }}
         run: |
           git add -A automation/queue/ automation/state.json
           if git diff --cached --quiet; then
@@ -73,5 +78,5 @@ jobs:
           git commit -m "content: record daily column verification"
           git push
       - name: Require public-site success
-        if: ${{ github.event_name == 'schedule' }}
+        if: ${{ github.event_name == 'schedule' || inputs.publish_now == true }}
         run: python3 scripts/publish_daily_column.py assert-published

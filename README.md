@@ -54,4 +54,4 @@ source_1_url: https://example.com/source
 
 새 원고는 `layout: guide`로 렌더링됩니다. 제목 아래에 핵심 답, 3~4개 본문 절, 3~5개 확인 항목, 마무리와 실제 사용한 공식자료가 표시됩니다. `scripts/make_thumbnail.py`는 기존 사이트의 주제별 사진을 활용해 WebP 썸네일을 만듭니다. 기존 수동 원고와 2026-10-21 칼럼의 레이아웃은 그대로 유지됩니다.
 
-로컬 점검은 `python -m unittest discover -s tests -v`, `python scripts/publish_daily_column.py verify-existing`으로 실행합니다. Actions에서 수동으로 **Publish verified daily patent column**을 실행하면 오늘 글의 공개 상태만 확인합니다. 예약 작업은 GitHub Actions의 실제 시작 시각에 따라 지연·누락될 수 있으므로 08:00 정각 게시를 보증하지는 않습니다. GitHub 반영과 Cloudflare 배포가 정상이어도 공개 사이트 확인에 실패하면 게시 성공으로 기록하지 않습니다.
+로컬 점검은 `python -m unittest discover -s tests -v`, `python scripts/publish_daily_column.py verify-existing`으로 실행합니다. Actions에서 수동으로 **Publish verified daily patent column**을 실행할 때 `publish_now`가 꺼져 있으면 오늘 글의 공개 상태만 확인하고, 켜져 있으면 GitHub 예약 실행 누락 시 남아 있는 5회 시도 중 하나를 사용하여 즉시 게시합니다. 예약 작업은 GitHub Actions의 실제 시작 시각에 따라 지연·누락될 수 있으므로 08:00 정각 게시를 보증하지는 않습니다. GitHub 반영과 Cloudflare 배포가 정상이어도 공개 사이트 확인에 실패하면 게시 성공으로 기록하지 않습니다.
