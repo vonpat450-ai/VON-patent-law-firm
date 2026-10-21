@@ -40,6 +40,16 @@ class DailyColumnTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Body length"):
             validate_article(candidate, [])
 
+    def test_broken_related_page_is_rejected(self) -> None:
+        checked = validate_article(article(), [])
+        document = serialize("2026-10-21", choose_topic("2026-10-21"), checked)
+        document = document.replace("related_url: process.html", "related_url: missing.html")
+        with tempfile.TemporaryDirectory(dir=Path(__file__).parent) as directory:
+            path = Path(directory) / "daily-2026-10-21.md"
+            path.write_text(document, encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "related_url"):
+                read_article(path)
+
 
 if __name__ == "__main__":
     unittest.main()

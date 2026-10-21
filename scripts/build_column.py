@@ -42,6 +42,12 @@ def read_article(path: Path) -> tuple[dict[str, str], list[str]]:
         value = metadata.get(key, "")
         if value and (not ASSET_RE.fullmatch(value) or not (DIST / value).is_file()):
             raise ValueError(f"{path.name}: {key} must name an existing dist/assets file")
+    related_url = metadata.get("related_url", "")
+    if related_url and (
+        not re.fullmatch(r"[a-z-]+\.html", related_url)
+        or not (DIST / related_url).is_file()
+    ):
+        raise ValueError(f"{path.name}: related_url must name an existing local HTML page")
     return metadata, lines
 
 

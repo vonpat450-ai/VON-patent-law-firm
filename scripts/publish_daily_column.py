@@ -28,15 +28,15 @@ KST = ZoneInfo("Asia/Seoul")
 # The publisher supplies its own official sources. Gemini cannot create citations.
 # Rotate the reader question, not a changing legal deadline or fee.
 TOPICS = (
-    ("국내특허", "특허출원 전에 아이디어를 공개해도 될까요?", "공개 전 점검할 항목과 선행기술 조사", "https://www.kipo.go.kr/ko/kpoContentView.do?menuCd=SCD0200111", "지식재산처, 특허의 이해", "procedure.html", "특허등록절차 살펴보기"),
+    ("국내특허", "특허출원 전에 아이디어를 공개해도 될까요?", "공개 전 점검할 항목과 선행기술 조사", "https://www.kipo.go.kr/ko/kpoContentView.do?menuCd=SCD0200111", "지식재산처, 특허의 이해", "process.html", "특허등록절차 살펴보기"),
     ("해외특허", "PCT 국제출원과 해외 등록은 어떻게 다른가요?", "국가단계 진입 전 확인할 사항", "https://www.wipo.int/en/web/pct-system/faqs/faqs", "WIPO, PCT 자주 묻는 질문", "overseas.html", "해외특허등록 살펴보기"),
-    ("국내특허", "특허 명세서에서 왜 기술 설명이 중요한가요?", "발명의 핵심을 정리하는 관점", "https://www.kipo.go.kr/ko/kpoContentView.do?menuCd=SCD0200111", "지식재산처, 특허의 이해", "procedure.html", "특허등록절차 살펴보기"),
+    ("국내특허", "특허 명세서에서 왜 기술 설명이 중요한가요?", "발명의 핵심을 정리하는 관점", "https://www.kipo.go.kr/ko/kpoContentView.do?menuCd=SCD0200111", "지식재산처, 특허의 이해", "process.html", "특허등록절차 살펴보기"),
     ("해외특허", "해외 출원 국가는 무엇을 기준으로 고를까요?", "시장과 사업 계획을 함께 살펴보기", "https://www.wipo.int/en/web/pct-system/faqs/faqs", "WIPO, PCT 자주 묻는 질문", "overseas.html", "해외특허등록 살펴보기"),
-    ("국내특허", "특허 심사에서는 무엇을 확인하나요?", "출원부터 결정까지의 흐름", "https://www.kipo.go.kr/ko/kpoContentView.do?menuCd=SCD0200111", "지식재산처, 특허의 이해", "procedure.html", "특허등록절차 살펴보기"),
+    ("국내특허", "특허 심사에서는 무엇을 확인하나요?", "출원부터 결정까지의 흐름", "https://www.kipo.go.kr/ko/kpoContentView.do?menuCd=SCD0200111", "지식재산처, 특허의 이해", "process.html", "특허등록절차 살펴보기"),
     ("해외특허", "개별국 직접출원과 PCT 중 무엇을 검토할까요?", "진출 국가가 정해졌는지부터 판단하기", "https://www.wipo.int/en/web/pct-system/faqs/faqs", "WIPO, PCT 자주 묻는 질문", "overseas.html", "해외특허등록 살펴보기"),
-    ("국내특허", "선행기술 조사는 왜 출원 전에 할까요?", "기술의 차이와 권리 범위 살피기", "https://www.wipo.int/en/web/patents/protection", "WIPO, How to Protect Inventions through Patents", "procedure.html", "특허등록절차 살펴보기"),
+    ("국내특허", "선행기술 조사는 왜 출원 전에 할까요?", "기술의 차이와 권리 범위 살피기", "https://www.wipo.int/en/web/patents/protection", "WIPO, How to Protect Inventions through Patents", "process.html", "특허등록절차 살펴보기"),
     ("해외특허", "PCT 국가단계에 들어가기 전 무엇을 준비할까요?", "번역과 현지 절차를 미리 확인하기", "https://www.wipo.int/en/web/pct-system/faqs/faqs", "WIPO, PCT 자주 묻는 질문", "overseas.html", "해외특허등록 살펴보기"),
-    ("국내특허", "특허를 받을 수 있는 발명인지 어떻게 살펴볼까요?", "신규성·진보성·산업상 이용가능성의 기본", "https://www.kipo.go.kr/ko/kpoContentView.do?menuCd=SCD0200111", "지식재산처, 특허의 이해", "procedure.html", "특허등록절차 살펴보기"),
+    ("국내특허", "특허를 받을 수 있는 발명인지 어떻게 살펴볼까요?", "신규성·진보성·산업상 이용가능성의 기본", "https://www.kipo.go.kr/ko/kpoContentView.do?menuCd=SCD0200111", "지식재산처, 특허의 이해", "process.html", "특허등록절차 살펴보기"),
     ("해외특허", "국제조사보고서는 어떻게 활용할까요?", "국가단계 진입 전략의 참고 자료", "https://www.wipo.int/en/web/pct-system/faqs/faqs", "WIPO, PCT 자주 묻는 질문", "overseas.html", "해외특허등록 살펴보기"),
 )
 
