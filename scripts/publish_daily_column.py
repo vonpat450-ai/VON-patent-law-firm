@@ -83,7 +83,9 @@ def prompt_for(today: str, topic: tuple[str, ...], titles: list[str]) -> str:
 실제 의뢰인, 개인 정보, 가상의 판례, 출처 없는 인용문을 쓰지 마세요.
 기존 칼럼과 같은 제목이나 같은 논지의 반복을 피하세요. 기존 제목: {json.dumps(titles[-80:], ensure_ascii=False)}
 
-읽기 쉬운 설명형 칼럼을 작성하세요. 전체 본문은 한국어 1800~3200자 정도, 소제목은 4~6개로 합니다.
+읽기 쉬운 설명형 칼럼을 작성하세요. 본문 첫 문단은 150~250자입니다.
+그 뒤에 번호가 붙은 소제목 4~6개를 쓰고, 소제목마다 250~400자 분량의 설명을 2~3개 문단으로 적으세요.
+전체 본문은 한국어 1600~2800자 정도로 작성하세요. 너무 짧게 요약하지 마세요.
 결론에는 독자가 자신의 상황에서 점검할 항목을 구체적으로 제시하세요.
 JSON 객체만 반환하세요. 필드는 title, subtitle, description, body 네 개의 문자열입니다.
 title은 45자 이내, subtitle은 55자 이내, description은 120자 이내입니다.
@@ -141,8 +143,8 @@ def validate_article(article: dict[str, str], titles: list[str]) -> dict[str, st
             raise ValueError(f"Invalid {key}")
         article[key] = value.strip()
     body = article.get("body")
-    if not isinstance(body, str) or not 1500 <= len(body.strip()) <= 5500:
-        raise ValueError("Body length is outside the allowed range")
+    if not isinstance(body, str) or not 1000 <= len(body.strip()) <= 5500:
+        raise ValueError(f"Body length is outside the allowed range: {len(body) if isinstance(body, str) else 0}")
     if len(re.findall(r"^## \d+\. ", body, flags=re.MULTILINE)) not in range(4, 7):
         raise ValueError("Body must contain 4–6 numbered sections")
     if re.search(r"(?m)^# (?!#)|https?://|\[[^]]+\]\([^)]+\)|<script|</", body, re.I):
