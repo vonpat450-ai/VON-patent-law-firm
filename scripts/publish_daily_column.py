@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 import re
 import sys
+import time
 from urllib import error, request
 from zoneinfo import ZoneInfo
 
@@ -21,7 +22,7 @@ from build_column import read_article
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTICLES = ROOT / "dist" / "articles"
-MODEL = "gemini-3.5-flash"
+MODELS = ("gemini-3.5-flash", "gemini-3.5-flash-lite")
 KST = ZoneInfo("Asia/Seoul")
 
 # The publisher supplies its own official sources. Gemini cannot create citations.
@@ -100,21 +101,27 @@ def generate(prompt: str, api_key: str) -> dict[str, str]:
             "responseMimeType": "application/json",
         },
     }
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent"
-    req = request.Request(
-        url,
-        data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
-        headers={"Content-Type": "application/json", "x-goog-api-key": api_key},
-        method="POST",
-    )
-    try:
-        with request.urlopen(req, timeout=120) as response:
-            data = json.load(response)
-    except error.HTTPError as exc:
-        # Google's response can contain details; do not print it or any request headers.
-        raise RuntimeError(f"Gemini API returned HTTP {exc.code}") from exc
-    except error.URLError as exc:
-        raise RuntimeError("Could not reach Gemini API") from exc
+    data = None
+    for index, model in enumerate((*MODELS[:1], *MODELS)):
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+        req = request.Request(
+            url,
+            data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+            headers={"Content-Type": "application/json", "x-goog-api-key": api_key},
+            method="POST",
+        )
+        try:
+            with request.urlopen(req, timeout=120) as response:
+                data = json.load(response)
+            break
+        except error.HTTPError as exc:
+            # Google's response can contain details; do not print it or request headers.
+            if exc.code not in {500, 502, 503, 504} or index == 2:
+                raise RuntimeError(f"Gemini API returned HTTP {exc.code}") from exc
+            print(f"{model} is temporarily unavailable; trying another free-tier request")
+            time.sleep(5)
+        except error.URLError as exc:
+            raise RuntimeError("Could not reach Gemini API") from exc
     try:
         candidate = data["candidates"][0]
         if candidate.get("finishReason") != "STOP":
