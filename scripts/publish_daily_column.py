@@ -21,7 +21,7 @@ from build_column import read_article
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTICLES = ROOT / "dist" / "articles"
-MODEL = "gemini-2.5-flash"
+MODEL = "gemini-3.5-flash"
 KST = ZoneInfo("Asia/Seoul")
 
 # The publisher supplies its own official sources. Gemini cannot create citations.
