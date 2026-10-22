@@ -120,7 +120,7 @@ def update_page(path: Path) -> None:
             "publisher": {"@type": "Organization", "name": SITE_NAME, "url": f"{BASE}/"},
         }))
     block = "<!-- SEO_METADATA_START -->\n" + "\n".join(tags) + "\n<!-- SEO_METADATA_END -->"
-    html = re.sub(r"<!-- SEO_METADATA_START -->[\s\S]*?<!-- SEO_METADATA_END -->", "", html)
+    html = re.sub(r"\n*<!-- SEO_METADATA_START -->[\s\S]*?<!-- SEO_METADATA_END -->\n*", "\n", html)
     if "</head>" not in html:
         raise ValueError(f"{path.name}: missing head")
     html = html.replace("</head>", f"{block}\n</head>", 1)
