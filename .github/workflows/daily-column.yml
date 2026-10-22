@@ -48,6 +48,7 @@ jobs:
         if: ${{ github.event_name == 'schedule' || inputs.publish_now == true }}
         env:
           COLUMN_SLOT: ${{ github.event.schedule }}
+          MAGNIFIC_API_KEY: ${{ secrets.MAGNIFIC_API_KEY }}
         run: |
           if [ "${{ github.event_name }}" = "schedule" ]; then
             python3 scripts/publish_daily_column.py stage --slot "$COLUMN_SLOT"

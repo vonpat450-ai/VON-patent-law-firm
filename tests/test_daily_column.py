@@ -152,7 +152,8 @@ class PublicationTests(unittest.TestCase):
         }
         publisher.write_json(self.item_path, self.item)
 
-    def fake_thumbnail(self, slug: str, title: str, category: str, summary: str) -> str:
+    def fake_thumbnail(self, slug: str, title: str, category: str, summary: str,
+                       *, label: str = "", visual: str = "", require_ai: bool = False) -> str:
         name = f"assets/{slug}-thumb.webp"
         (self.dist / name).write_bytes(b"RIFFtestWEBP")
         return name
@@ -222,6 +223,15 @@ class PublicationTests(unittest.TestCase):
         self.assertEqual(len(manifest["articles"]), 2)
         self.assertEqual(manifest["articles"][0]["publish_at"], "2026-10-23T08:00:00+09:00")
         self.assertEqual(publisher.schedule_upcoming(day, source_check=lambda _: True), [])
+
+    def test_prepared_column_thumbnail_is_upgraded_once_after_key_arrives(self) -> None:
+        day = date(2026, 10, 22)
+        publisher.schedule_upcoming(day, source_check=lambda _: True)
+        with patch.dict("os.environ", {"MAGNIFIC_API_KEY": "test-key"}):
+            publisher.schedule_upcoming(day, source_check=lambda _: True)
+            self.assertEqual(json.loads(self.item_path.read_text(encoding="utf-8"))["thumbnail_version"], 2)
+            publisher.schedule_upcoming(day, source_check=lambda _: True)
+        self.assertEqual(len(list((self.dist / "assets").glob("*-thumb.webp"))), 1)
 
     def test_queue_is_refilled_only_up_to_seven_and_three_per_day(self) -> None:
         day = date(2026, 10, 22)

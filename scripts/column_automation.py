@@ -32,11 +32,11 @@ CLAIM_SCHEMA = {"type": "OBJECT", "properties": {key: STRING for key in ("claim"
 ARTICLE_SCHEMA = {
     "type": "OBJECT",
     "properties": {
-        **{key: STRING for key in ("title", "category", "slug", "summary", "meta_description", "body")},
+        **{key: STRING for key in ("title", "category", "slug", "summary", "meta_description", "body", "thumbnail_label", "thumbnail_visual")},
         "sources": {"type": "ARRAY", "items": SOURCE_SCHEMA},
         "claims": {"type": "ARRAY", "items": CLAIM_SCHEMA},
     },
-    "required": ["title", "category", "slug", "summary", "meta_description", "body", "sources", "claims"],
+    "required": ["title", "category", "slug", "summary", "meta_description", "body", "thumbnail_label", "thumbnail_visual", "sources", "claims"],
 }
 AUDIT_SCHEMA = {"type": "OBJECT", "properties": {"supported": {"type": "BOOLEAN"}, "unsupported_claims": {"type": "ARRAY", "items": STRING}}, "required": ["supported", "unsupported_claims"]}
 
@@ -165,7 +165,7 @@ def gemini_json(prompt: str, api_key: str, opener=request.urlopen) -> dict:
 
 def clean_article(raw: dict, topic: dict) -> dict:
     article = dict(raw)
-    for key in ("title", "summary", "meta_description", "body"):
+    for key in ("title", "summary", "meta_description", "body", "thumbnail_label", "thumbnail_visual"):
         if isinstance(article.get(key), str):
             article[key] = article[key].strip()
     body = article.get("body", "")
@@ -216,6 +216,11 @@ def validate_article(article: dict, topic: dict, source: dict, recent: list[dict
         value = article[key]
         if not isinstance(value, str) or not value.strip() or len(value) > limit or "\n" in value:
             raise ValueError(f"Invalid {key}")
+    for key, limit in (("thumbnail_label", 18), ("thumbnail_visual", 500)):
+        if key in article:
+            value = article[key]
+            if not isinstance(value, str) or not value.strip() or len(value) > limit or "\n" in value:
+                raise ValueError(f"Invalid {key}")
     if article["category"] != topic["category"] or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+){2,5}", article["slug"]):
         raise ValueError("Category or slug is invalid")
     if any(SequenceMatcher(None, article["title"], item["title"]).ratio() >= .78 for item in recent):

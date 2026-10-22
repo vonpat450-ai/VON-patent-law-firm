@@ -45,7 +45,8 @@ def prepare(day: date, *, api_key: str | None = None, fetcher=fetch_source,
                    for path in (DIST / "articles").glob("*.md")):
                 raise ValueError("Generated slug is already published")
             path = DIST / "articles" / f"daily-{day.isoformat()}-manual-{article['slug']}.md"
-            thumbnail = create_thumbnail(path.stem, article["title"], article["category"], article["summary"])
+            thumbnail = create_thumbnail(path.stem, article["title"], article["category"], article["summary"],
+                                         label=article.get("thumbnail_label", ""), visual=article.get("thumbnail_visual", ""))
             path.write_text(serialize(day.isoformat(), {
                 "topic_key": topic["key"], "source": source, "article": article,
             }, thumbnail), encoding="utf-8")

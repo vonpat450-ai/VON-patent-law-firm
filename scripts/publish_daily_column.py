@@ -165,6 +165,30 @@ def schedule_manifest() -> None:
 def schedule_upcoming(day: date, *, source_check=source_is_current) -> list[Path]:
     """Render verified drafts for future 08:00 KST releases, without exposing them."""
     repaired = False
+    # Upgrade the oldest prepublished images gradually; do not delay the 08:00 release.
+    if os.environ.get("MAGNIFIC_API_KEY"):
+        attempts = 0
+        for queue_path, item in queue_items():
+            if item.get("status") != "scheduled" or item.get("target_date", "") <= day.isoformat():
+                continue
+            if item.get("thumbnail_version") == 2 or item.get("thumbnail_last_attempt") == day.isoformat():
+                continue
+            article = item["article"]
+            slug = Path(item["article_path"]).stem
+            attempts += 1
+            try:
+                create_thumbnail(slug, article["title"], article["category"], article["summary"],
+                                 label=article.get("thumbnail_label", ""), visual=article.get("thumbnail_visual", ""),
+                                 require_ai=True)
+            except (OSError, RuntimeError, ValueError) as exc:
+                item["thumbnail_last_attempt"] = day.isoformat()
+                print(f"Thumbnail refresh deferred for {slug}: {type(exc).__name__}")
+            else:
+                item["thumbnail_version"] = 2
+                repaired = True
+            write_json(queue_path, item)
+            if attempts >= 2:
+                break
     for queue_path, item in queue_items():
         if item.get("status") != "scheduled" or not item.get("article_path"):
             continue
@@ -192,7 +216,9 @@ def schedule_upcoming(day: date, *, source_check=source_is_current) -> list[Path
                 write_json(queue_path, item)
                 continue
             article_path = slug_path(key, item["article"]["slug"])
-            thumbnail = create_thumbnail(article_path.stem, item["article"]["title"], item["article"]["category"], item["article"]["summary"])
+            article = item["article"]
+            thumbnail = create_thumbnail(article_path.stem, article["title"], article["category"], article["summary"],
+                                         label=article.get("thumbnail_label", ""), visual=article.get("thumbnail_visual", ""))
             article_path.write_text(serialize(key, item, thumbnail), encoding="utf-8")
             read_article(article_path)
             item.update(status="scheduled", target_date=key, article_path=str(article_path.relative_to(DIST)).replace("\\", "/"),
@@ -319,7 +345,9 @@ def stage(day: date, slot: str, *, visibility=site_visible, source_check=source_
             raise ValueError("Queued article path is unsafe")
         if not path.exists() or item.get("target_date") != key:
             basename = path.stem
-            thumbnail = create_thumbnail(basename, item["article"]["title"], item["article"]["category"], item["article"]["summary"])
+            article = item["article"]
+            thumbnail = create_thumbnail(basename, article["title"], article["category"], article["summary"],
+                                         label=article.get("thumbnail_label", ""), visual=article.get("thumbnail_visual", ""))
             path.write_text(serialize(key, item, thumbnail), encoding="utf-8")
             read_article(path)
             build_columns()

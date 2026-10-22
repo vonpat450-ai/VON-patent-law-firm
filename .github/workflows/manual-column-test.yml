@@ -28,6 +28,7 @@ jobs:
       - name: Ask Gemini to create and validate one extra live column
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          MAGNIFIC_API_KEY: ${{ secrets.MAGNIFIC_API_KEY }}
         run: python3 scripts/publish_manual_column.py prepare
       - name: Push generated column to Cloudflare Pages
         run: |

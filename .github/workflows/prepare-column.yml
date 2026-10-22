@@ -44,6 +44,8 @@ jobs:
           fi
       - name: Predeploy verified columns for future 08:00 releases
         if: ${{ !cancelled() && inputs.dry_run != true }}
+        env:
+          MAGNIFIC_API_KEY: ${{ secrets.MAGNIFIC_API_KEY }}
         run: python3 scripts/publish_daily_column.py schedule-upcoming
       - name: Preserve verified queue
         if: ${{ !cancelled() && inputs.dry_run != true }}
