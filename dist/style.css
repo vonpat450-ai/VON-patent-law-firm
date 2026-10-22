@@ -20,9 +20,9 @@
 .hero-home .home-composition .home-visual-wire{left:55%;top:74px;width:420px;height:420px;opacity:.88;mask-image:radial-gradient(ellipse,#000 47%,transparent 78%)}
 .hero-home .home-composition .home-visual-final{right:-5%;top:78px;width:440px;height:440px;mask-image:radial-gradient(ellipse,#000 45%,transparent 80%)}
 .hero-home .home-composition::after{background:linear-gradient(90deg,#f6fafb 0%,#f6fafbe0 27%,transparent 54%)}
-.dark-feature.dark-home{background-image:linear-gradient(90deg,#102b34 0%,#102b34 30%,#102b34a6 58%,#102b3429 100%),url('assets/home-center.png');background-size:cover;background-position:center}
-.dark-feature.dark-process{background-image:linear-gradient(90deg,#102b34 0%,#102b34 36%,#102b34c9 62%,#102b3470 100%),url('assets/process-center.png');background-size:cover;background-position:center}
-.dark-feature.dark-priority{background-image:linear-gradient(90deg,#102b34 0%,#102b34 33%,#102b34a8 57%,#102b3433 100%),url('assets/priority-center.png');background-size:cover;background-position:center}
+.dark-feature.dark-home{background-image:linear-gradient(90deg,#102b34 0%,#102b34 30%,#102b34a6 58%,#102b3429 100%),url('assets/home-center.webp');background-size:cover;background-position:center}
+.dark-feature.dark-process{background-image:linear-gradient(90deg,#102b34 0%,#102b34 36%,#102b34c9 62%,#102b3470 100%),url('assets/process-center.webp');background-size:cover;background-position:center}
+.dark-feature.dark-priority{background-image:linear-gradient(90deg,#102b34 0%,#102b34 33%,#102b34a8 57%,#102b3433 100%),url('assets/priority-center.webp');background-size:cover;background-position:center}
 .dark-feature.dark-search{background-image:linear-gradient(90deg,#102b34 0%,#102b34 32%,#102b3499 57%,#102b3426 100%),url('assets/search-center.png');background-size:cover;background-position:center}
 .dark-feature[class*="dark-"]::before{opacity:.06}
 .step-symbol img{width:27px;height:27px;object-fit:contain}
@@ -246,7 +246,7 @@ html,body,button,input,select,textarea{font-family:'Pretendard','Malgun Gothic',
 .overseas-card-route strong{font-weight:800}
 .overseas-card p{font-size:12px;line-height:1.65;color:#94a7ae;margin:0}
 .overseas-timing{position:relative;background:linear-gradient(110deg,#102b34 0%,#103642 66%,#174656 100%);color:#fff;padding:95px 0;overflow:hidden}
-.overseas-timing::before{content:'';position:absolute;inset:0;background:url('assets/overseas-center.png') right center/auto 125% no-repeat;opacity:.45;pointer-events:none}
+.overseas-timing::before{content:'';position:absolute;inset:0;background:url('assets/overseas-center.webp') right center/auto 125% no-repeat;opacity:.45;pointer-events:none}
 .overseas-timing::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,#102b34 0%,#102b34 30%,#102b34ed 48%,#102b3499 66%,transparent 88%);pointer-events:none}
 .overseas-timing .container{position:relative;z-index:1;grid-template-columns:.75fr 1.4fr;gap:75px}
 .overseas-timing .section-title{font-size:34px;color:#fff}
@@ -382,3 +382,6 @@ html,body,button,input,select,textarea{font-family:'Pretendard','Malgun Gothic',
 @media(max-width:950px){.column-insight .column-layout{grid-template-columns:200px minmax(0,1fr);gap:32px}}
 @media(max-width:760px){.column-insight .column-hero{min-height:0;padding:38px 0 54px;background-size:cover,auto 100%;background-position:center,right bottom}.column-insight .column-layout{grid-template-columns:1fr}.column-insight .column-section{padding:40px 0 75px}.column-insight .column-sidebar{position:static}.column-insight .column-toc ol{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.column-insight .column-hero{background-image:linear-gradient(90deg,#f6fafbf5,#f6fafbdc),var(--column-hero-image)}.column-insight .column-hero h1{font-size:34px}.column-insight .column-toc ol{grid-template-columns:1fr}.insight-cards{grid-template-columns:1fr}.insight-cards li{min-height:0}.insight-takeaway{padding:21px}}
+
+/* SEO copy keeps existing visual hierarchy while using semantic headings and links. */
+.article-copy h3{font-size:16px;line-height:1.4;display:block;margin:0;font-weight:700}.section-description a,.info-note a,.overseas-note a{color:#276f89;text-decoration:underline;text-underline-offset:3px}

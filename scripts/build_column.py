@@ -8,6 +8,8 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import subprocess
+import sys
 
 DIST = Path(__file__).resolve().parents[1] / "dist"
 ASSET_RE = re.compile(r"^assets/[a-zA-Z0-9._-]+$")
@@ -300,7 +302,7 @@ def render_page(path: Path, metadata: dict[str, str], lines: list[str]) -> dict[
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png?v=3">
   <link rel="shortcut icon" href="assets/favicon.ico?v=3">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon-180.png?v=3">
-  <link rel="stylesheet" href="style.css?v=columns-2">
+  <link rel="stylesheet" href="style.css?v=seo-20261022">
 </head>
 <body data-page="column" class="{'column-insight' if insight else ''}">
   <div id="app"></div>
@@ -319,7 +321,7 @@ def render_page(path: Path, metadata: dict[str, str], lines: list[str]) -> dict[
         <div class="container column-layout">
           <aside class="column-sidebar" aria-label="칼럼 목차">
             <details class="column-toc" open><summary>{'이 글에서 살펴볼 내용' if insight else '이 글의 목차'}</summary><ol>{toc}</ol>{'<p class="insight-toc-note">필요한 항목부터 읽어도 좋습니다. 전체 흐름을 이해할 수 있도록 정리했습니다.</p>' if insight else ''}</details>
-            {'' if insight else related}
+            {related}
           </aside>
           <article class="column-body">{body}{sources_html(metadata)}</article>
         </div>
@@ -327,7 +329,7 @@ def render_page(path: Path, metadata: dict[str, str], lines: list[str]) -> dict[
       {bottom}
     </main>
   </template>
-  <script src="app.js?v=columns-2" defer></script>
+  <script src="app.js?v=seo-20261022" defer></script>
 </body>
 </html>
 '''
@@ -353,6 +355,9 @@ def main() -> None:
         if count != 1:
             raise ValueError(f"{name}: expected one article data script")
         page.write_text(updated, encoding="utf-8")
+    root = DIST.parent
+    subprocess.run(["node", str(root / "scripts" / "prerender_pages.mjs")], cwd=root, check=True)
+    subprocess.run([sys.executable, str(root / "scripts" / "optimize_seo.py")], cwd=root, check=True)
     print(f"Indexed {len(listing)} columns")
 
 
