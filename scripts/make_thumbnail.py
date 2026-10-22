@@ -1,4 +1,4 @@
-"""Create photographic column thumbnails from the site's licensed image library.
+"""Create full-frame photographic thumbnails from the site's licensed image library.
 
 The daily job is unattended and uses no image API or paid service. Each source
 image was already supplied for this site. Keep the mapping here editable when
@@ -10,7 +10,7 @@ from __future__ import annotations
 from pathlib import Path
 import re
 
-from PIL import Image, ImageDraw, ImageOps
+from PIL import Image, ImageOps
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -53,15 +53,11 @@ def create_thumbnail(slug: str, title: str, category: str, description: str = ""
     with Image.open(source) as original:
         photo = ImageOps.fit(original.convert("RGB"), (1200, 600), Image.Resampling.LANCZOS, centering=(0.6, 0.5))
 
+    # Keep the subject visible across the entire frame; no side is reserved for text.
     # Bring different site photographs into the same dark-blue editorial style.
     cool = Image.new("RGBA", photo.size, (9, 34, 53, 42))
     photo = Image.alpha_composite(photo.convert("RGBA"), cool)
-    shadow = Image.new("RGBA", photo.size, (0, 0, 0, 0))
-    draw = ImageDraw.Draw(shadow)
-    for x in range(1200):
-        strength = int(195 * max(0, 1 - x / 850) ** 1.45)
-        draw.line((x, 0, x, 600), fill=(5, 27, 43, strength))
-    photo = Image.alpha_composite(photo, shadow).convert("RGB")
+    photo = photo.convert("RGB")
     photo.save(target, "WEBP", quality=84, method=6)
     return f"assets/{target.name}"
 
