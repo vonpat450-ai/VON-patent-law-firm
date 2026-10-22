@@ -1,0 +1,44 @@
+name: Publish one extra Gemini column now
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-patent-column-pipeline
+  cancel-in-progress: false
+
+jobs:
+  publish-extra:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install image renderer
+        run: python3 -m pip install "Pillow>=10,<13"
+      - name: Ask Gemini to create and validate one extra live column
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python3 scripts/publish_manual_column.py prepare
+      - name: Push generated column to Cloudflare Pages
+        run: |
+          git add -A dist/
+          if git diff --cached --quiet; then
+            echo "This date already has its one extra column; checking the public site."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "content: publish manual Gemini column"
+          git push
+      - name: Require actual public-site visibility
+        run: python3 scripts/publish_manual_column.py verify --wait-seconds 540
