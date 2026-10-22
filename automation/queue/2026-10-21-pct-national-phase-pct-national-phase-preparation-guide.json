@@ -1,5 +1,5 @@
 {
-  "status": "ready",
+  "status": "scheduled",
   "created_at": "2026-10-21T16:36:46.461415+09:00",
   "topic_key": "pct-national-phase",
   "article": {
@@ -45,8 +45,8 @@
     "body_sha256": "c940c7801843c5d012e036e068eb839ba518f99d380a8bbbc179b3022d535b12",
     "checked_at": "2026-10-21T07:36:08"
   },
-  "article_path": "",
-  "target_date": "",
+  "article_path": "articles/daily-2026-10-23-pct-national-phase-preparation-guide.md",
+  "target_date": "2026-10-23",
   "attempt_slots": [],
   "last_error": ""
 }
