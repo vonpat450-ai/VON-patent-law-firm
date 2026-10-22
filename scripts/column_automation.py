@@ -14,7 +14,7 @@ import re
 import time
 from urllib import error, parse, request
 
-from build_column import read_article
+from build_column import read_article, render_guide_body
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -172,6 +172,9 @@ def clean_article(raw: dict, topic: dict) -> dict:
         body = re.sub(r"\A# [^\n]+\n+", "", body)
         body = re.sub(r"(?m)^#{2,3}\s*0?([1-4])[.)]\s*", r"## \1. ", body)
         body = re.sub(r"(?m)^## (?:결론|정리|마지막으로)\s*$", "## 마무리", body)
+        # The guide renderer only accepts takeaway and checklist directives.
+        # Keep the words while removing decorative blocks and stray headings.
+        body = re.sub(r"(?ms)^:::(?:quote|cards|steps)\s*\n(.*?)\n:::\s*", lambda match: match.group(1).strip() + "\n\n", body)
         # Gemini sometimes returns ordinary headings instead of the requested
         # fenced blocks. Canonicalize those purely presentational differences.
         if ":::takeaway" not in body:
@@ -195,6 +198,7 @@ def clean_article(raw: dict, topic: dict) -> dict:
             body = body[:checklist.start()] + body[checklist.end():]
             closing = re.search(r"(?m)^## 마무리\s*$", body)
             body = body[:closing.start()] + block + "\n\n" + body[closing.start():]
+        body = re.sub(r"(?m)^## (?![1-4]\. |마무리\s*$|FAQ\s*$)(.+)$", r"\1", body)
         article["body"] = body.strip()
     if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+){2,5}", str(article.get("slug", ""))):
         article["slug"] = f"patent-{topic['key']}-guide"
@@ -232,6 +236,7 @@ def validate_article(article: dict, topic: dict, source: dict, recent: list[dict
         raise ValueError("Body needs one closing section and at most one FAQ")
     if len(re.findall(r"(?m)^### ", body)) > 2:
         raise ValueError("FAQ has too many questions")
+    render_guide_body(["# " + article["title"], "## " + article["summary"], *body.splitlines()])
     checklist = re.search(r":::checklist\s*\n(.*?)\n:::|$", body, re.S)
     if not checklist or not 3 <= len(re.findall(r"(?m)^\s*- ", checklist.group(1))) <= 5:
         raise ValueError("Checklist needs 3 to 5 items")

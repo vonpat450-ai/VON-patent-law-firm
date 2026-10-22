@@ -47,6 +47,10 @@ export async function handle(request, env, nowMs = Date.now()) {
     });
   }
   const scheduled = entries.find(entry => pathsFor(entry).includes(path));
+  const datedDaily = path.match(/^\/(?:column-|articles\/|assets\/)daily-(\d{4}-\d{2}-\d{2})-/);
+  if (!scheduled && datedDaily && nowMs < Date.parse(`${datedDaily[1]}T08:00:00+09:00`)) {
+    return new Response("Not found", { status: 404, headers: { "Cache-Control": "no-store", "X-Robots-Tag": "noindex" } });
+  }
   if (scheduled) {
     if (hidden.includes(scheduled)) {
       return new Response("Not found", { status: 404, headers: { "Cache-Control": "no-store", "X-Robots-Tag": "noindex" } });

@@ -43,6 +43,15 @@ def valid_article() -> dict:
 
 
 class DraftTests(unittest.TestCase):
+    def test_unsupported_presentation_is_normalized_before_queueing(self) -> None:
+        article = valid_article()
+        article["body"] = article["body"].replace("## 1.", "## 도입 설명\n\n도입입니다.\n\n## 1.", 1)
+        article["body"] = article["body"].replace("## 2.", ":::quote\n검증된 자료의 설명입니다.\n:::\n\n## 2.", 1)
+        cleaned = evidence.clean_article(article, TOPIC)
+        evidence.validate_article(cleaned, TOPIC, SOURCE, [])
+        self.assertNotIn(":::quote", cleaned["body"])
+        self.assertNotIn("## 도입 설명", cleaned["body"])
+
     def test_presentational_variants_are_normalized(self) -> None:
         article = valid_article()
         article["body"] = article["body"].replace(":::takeaway", "## 핵심 답", 1).replace("\n:::\n\n해외", "\n\n해외", 1)

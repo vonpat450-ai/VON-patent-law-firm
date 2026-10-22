@@ -36,6 +36,7 @@ test('prepublished pages and their raw assets are hidden until exactly 08:00 KST
   }
   assert.equal((await get('/publication-schedule.json', release)).status, 404);
   assert.equal((await get('/column-old', before)).status, 200);
+  assert.equal((await get('/articles/daily-2026-10-24-unlisted.md', before)).status, 404);
 });
 
 test('listing and sitemap reveal the column at the same release time', async () => {

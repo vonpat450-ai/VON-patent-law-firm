@@ -21,7 +21,7 @@ from zoneinfo import ZoneInfo
 
 from build_column import main as build_columns, read_article
 from column_automation import (
-    AUTOMATION, BASE_URL, DIST, QUEUE, TOPICS, draft_one, fetch_source,
+    AUTOMATION, BASE_URL, DIST, QUEUE, TOPICS, clean_article, draft_one, fetch_source,
     recent_articles, source_is_current, topic_order,
 )
 from generate_sitemap import main as build_sitemap
@@ -164,9 +164,22 @@ def schedule_manifest() -> None:
 
 def schedule_upcoming(day: date, *, source_check=source_is_current) -> list[Path]:
     """Render verified drafts for future 08:00 KST releases, without exposing them."""
+    repaired = False
+    for queue_path, item in queue_items():
+        if item.get("status") != "scheduled" or not item.get("article_path"):
+            continue
+        topic = next(topic for topic in TOPICS if topic["key"] == item["topic_key"])
+        item["article"] = clean_article(item["article"], topic)
+        article_path = DIST / item["article_path"]
+        metadata, _ = read_article(article_path)
+        updated = serialize(item["target_date"], item, metadata["thumbnail"])
+        if article_path.read_text(encoding="utf-8") != updated:
+            article_path.write_text(updated, encoding="utf-8")
+            write_json(queue_path, item)
+            repaired = True
     ready = [(path, item) for path, item in queue_items() if item.get("status") == "ready"]
     scheduled: list[Path] = []
-    changed = False
+    changed = repaired
     for offset in range(1, QUEUE_TARGET + 1):
         target = day + timedelta(days=offset)
         key = target.isoformat()

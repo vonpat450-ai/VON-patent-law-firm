@@ -1,4 +1,35 @@
 {
   "version": 1,
-  "articles": []
+  "articles": [
+    {
+      "publish_at": "2026-10-22T08:00:00+09:00",
+      "href": "column-daily-2026-10-22-first-steps-for-foreign-patent-protection.html",
+      "source": "articles/daily-2026-10-22-first-steps-for-foreign-patent-protection.md",
+      "thumbnail": "assets/daily-2026-10-22-first-steps-for-foreign-patent-protection-thumb.webp"
+    },
+    {
+      "publish_at": "2026-10-23T08:00:00+09:00",
+      "href": "column-daily-2026-10-23-pct-national-phase-preparation-guide.html",
+      "source": "articles/daily-2026-10-23-pct-national-phase-preparation-guide.md",
+      "thumbnail": "assets/daily-2026-10-23-pct-national-phase-preparation-guide-thumb.webp"
+    },
+    {
+      "publish_at": "2026-10-24T08:00:00+09:00",
+      "href": "column-daily-2026-10-24-how-to-write-patent-specification.html",
+      "source": "articles/daily-2026-10-24-how-to-write-patent-specification.md",
+      "thumbnail": "assets/daily-2026-10-24-how-to-write-patent-specification-thumb.webp"
+    },
+    {
+      "publish_at": "2026-10-25T08:00:00+09:00",
+      "href": "column-daily-2026-10-25-patent-disclosure-before-filing.html",
+      "source": "articles/daily-2026-10-25-patent-disclosure-before-filing.md",
+      "thumbnail": "assets/daily-2026-10-25-patent-disclosure-before-filing-thumb.webp"
+    },
+    {
+      "publish_at": "2026-10-26T08:00:00+09:00",
+      "href": "column-daily-2026-10-26-using-pct-international-search-report.html",
+      "source": "articles/daily-2026-10-26-using-pct-international-search-report.md",
+      "thumbnail": "assets/daily-2026-10-26-using-pct-international-search-report-thumb.webp"
+    }
+  ]
 }
