@@ -1,0 +1,29 @@
+{
+  "note": "Existing published columns only. Apply after the scheduled column and thumbnail are verified on the live site. This file does not trigger generation or publication.",
+  "items": [
+    {
+      "article": "dist/articles/pct-country-strategy.md",
+      "thumbnail": "dist/assets/pct-country-strategy-thumb.webp",
+      "label": "PCT 국가 선택",
+      "visual": "A premium photorealistic glass globe with precise patent drawing details and several illuminated international routes, deep navy and restrained silver"
+    },
+    {
+      "article": "dist/articles/daily-2026-10-21.md",
+      "thumbnail": "dist/assets/daily-2026-10-21-thumb.webp",
+      "label": "출원 전 아이디어 공개",
+      "visual": "A confidential engineering sketchbook beside a prototype under controlled light, evoking the decision to disclose an invention before filing"
+    },
+    {
+      "article": "dist/articles/daily-2026-10-22-first-steps-for-foreign-patent-protection.md",
+      "thumbnail": "dist/assets/daily-2026-10-22-first-steps-for-foreign-patent-protection-canva.webp",
+      "label": "해외특허 첫걸음",
+      "visual": "A precision engineered product viewed beside a subtle glass globe and world map, suggesting the first decision in international patent protection"
+    },
+    {
+      "article": "dist/articles/daily-2026-10-22-manual-patent-examination-process-criteria.md",
+      "thumbnail": "dist/assets/daily-2026-10-22-manual-patent-examination-process-criteria-thumb.webp",
+      "label": "특허 심사 기준",
+      "visual": "A patent examiner's desk with technical drawings and a precisely machined prototype, photorealistic and free of legible text"
+    }
+  ]
+}
