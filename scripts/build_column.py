@@ -324,7 +324,7 @@ def render_page(path: Path, metadata: dict[str, str], lines: list[str]) -> dict[
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png?v=3">
   <link rel="shortcut icon" href="assets/favicon.ico?v=3">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon-180.png?v=3">
-  <link rel="stylesheet" href="style.css?v=columns-20261022">
+  <link rel="stylesheet" href="style.css?v=header-20261022">
 </head>
 <body data-page="column" class="{'column-insight' if insight else ''}">
   <div id="app"></div>
@@ -351,7 +351,7 @@ def render_page(path: Path, metadata: dict[str, str], lines: list[str]) -> dict[
       {bottom}
     </main>
   </template>
-  <script src="app.js?v=columns-20261022" defer></script>
+  <script src="app.js?v=header-20261022" defer></script>
 </body>
 </html>
 '''

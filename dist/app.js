@@ -12,7 +12,7 @@ const processSteps = [
 ];
 const knowledge = typeof window !== 'undefined' && Array.isArray(window.VON_ARTICLES) ? window.VON_ARTICLES : [];
 function escapeText(value){return String(value ?? '').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))}
-function header(){return `<header class="site-header"><div class="container header-inner"><a href="index.html" class="logo" aria-label="특허법인 본 홈"><img class="brand-logo" src="assets/von-standard-logo.png" alt="특허법인 본"></a><nav class="primary-nav" aria-label="주 메뉴">${nav.map(([id,label,href])=>`<a href="${href}" ${(page===id||(page==='column'&&id==='knowledge'))?'aria-current="page"':''}>${label}</a>`).join('')}</nav><div class="header-actions"><a class="btn btn-primary btn-small" href="contact.html">상담 신청 <span aria-hidden="true">→</span></a><button class="menu-toggle" type="button" aria-label="메뉴 열기" aria-expanded="false" aria-controls="mobile-nav"><span></span><span></span><span></span></button></div></div><nav class="mobile-nav" id="mobile-nav" aria-label="모바일 메뉴"><a href="index.html">메인페이지</a>${nav.map(([id,label,href])=>`<a href="${href}">${label}</a>`).join('')}<a href="contact.html">상담 신청</a></nav></header>`}
+function header(){return `<header class="site-header"><div class="container header-inner"><a href="index.html" class="logo" aria-label="특허법인 본 홈"><img class="brand-logo" src="assets/von-standard-logo.png" alt="특허법인 본"></a><nav class="primary-nav" aria-label="주 메뉴">${nav.map(([id,label,href])=>`<a href="${href}" ${(page===id||(page==='column'&&id==='knowledge'))?'aria-current="page"':''}>${label}</a>`).join('')}</nav><div class="header-actions"><a class="btn btn-primary btn-small" href="contact.html">상담 신청 <span aria-hidden="true">→</span></a></div></div></header>`}
 function heroVisual(kind){
   if(kind==='home') return `<div class="hero-visual home-composition" aria-hidden="true"><img class="home-visual-blur" src="assets/home-hero-03.webp" alt=""><img class="home-visual-wire" src="assets/home-hero-02.webp" alt=""><img class="home-visual-final" src="assets/home-hero-01.webp" alt=""></div>`;
   return `<div class="hero-visual" style="background-image:url('assets/${image[kind]}')" aria-hidden="true"></div>`;
@@ -103,9 +103,6 @@ const articleList = document.getElementById('knowledge-list');
 if (articleList) articleList.innerHTML = page === 'knowledge' ? knowledgeListing(knowledge) : articleCards(knowledge);
 const articleCount = document.getElementById('article-count');
 if(articleCount) articleCount.textContent = `전체 ${knowledge.length}개 칼럼`;
-const toggle = document.querySelector('.menu-toggle');
-toggle.addEventListener('click',()=>{const n=document.getElementById('mobile-nav');const open=n.classList.toggle('open');toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',open?'메뉴 닫기':'메뉴 열기')});
-document.querySelectorAll('.mobile-nav a').forEach(a=>a.addEventListener('click',()=>{document.getElementById('mobile-nav').classList.remove('open');toggle.setAttribute('aria-expanded','false')}));
 
 
 

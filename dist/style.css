@@ -400,3 +400,27 @@ html,body,button,input,select,textarea{font-family:'Pretendard','Malgun Gothic',
 .insight-table tr>*:last-child{border-right:0}
 .insight-table tbody tr:last-child td{border-bottom:0}
 @media(max-width:520px){.insight-table{min-width:480px}}
+
+/* Larger shared header and always-visible navigation without a menu button. */
+.site-header .brand-logo{width:167px}
+.site-header .primary-nav a{font-size:16.1px}
+.site-header .header-actions .btn{font-size:13.8px}
+.site-header .primary-nav{gap:clamp(22px,3vw,48px)}
+.site-header .header-inner{gap:20px}
+@media(max-width:760px){
+  .site-header{height:auto}
+  .site-header .header-inner{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 12px;min-height:104px}
+  .site-header .brand-logo{width:157.5px}
+  .site-header .header-actions .btn{display:inline-flex;font-size:13.8px;padding:9px 12px;gap:8px}
+  .site-header .primary-nav{display:flex;grid-column:1/-1;grid-row:2;gap:25px;min-width:0;width:100%;margin:0;overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+  .site-header .primary-nav::-webkit-scrollbar{display:none}
+  .site-header .primary-nav a{flex:none;font-size:16.1px;padding:12px 0 15px}
+  .site-header .primary-nav a::after{bottom:7px}
+}
+
+/* Put each date above its circle, with the event description below the line. */
+.overseas-milestones::before{top:31px}
+.overseas-milestones>div{padding-left:0}
+.overseas-milestones>div::before{top:26px}
+.overseas-milestones b{min-height:22px}
+.overseas-milestones small{margin-top:21px}
