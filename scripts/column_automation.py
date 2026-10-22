@@ -101,7 +101,7 @@ def recent_articles(today: date) -> list[dict]:
             result.append({"title": lines[0][2:].strip(), "summary": metadata.get("list_summary", metadata.get("description", "")), "category": metadata.get("category", ""), "published": metadata["published"]})
     for path in QUEUE.glob("*.json"):
         item = json.loads(path.read_text(encoding="utf-8"))
-        if item.get("status") in {"ready", "deploying", "failed"}:
+        if item.get("status") in {"ready", "scheduled", "deploying", "failed"}:
             result.append({"title": item["article"]["title"], "summary": item["article"]["summary"], "category": item["article"]["category"], "published": item["created_at"][:10]})
     return result
 

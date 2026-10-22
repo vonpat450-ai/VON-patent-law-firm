@@ -14,6 +14,12 @@ GitHub 저장소의 `main` 브랜치를 Cloudflare Pages에 연결합니다. Fra
 
 `python scripts/generate_sitemap.py`가 `dist/`의 공개 HTML 페이지를 찾아 정식 주소로 `dist/sitemap.xml`을 만듭니다. 예전 검색 주소인 `search.html`은 해외특허 페이지로 이동하므로 제외합니다. 각 페이지의 `lastmod`는 Git의 실제 수정 날짜를 사용합니다. `.github/workflows/sitemap.yml`은 매일 한국 시간 새벽 3시 15분에 실행되며, 사이트맵 내용이 달라진 경우에만 `main`에 커밋해 Cloudflare Pages에 배포합니다. GitHub Actions 화면에서 수동 실행도 가능합니다. `dist/robots.txt`에서 사이트맵 주소를 검색엔진에 알립니다.
 
+### 오전 8시 칼럼 공개
+
+`.github/workflows/prepare-column.yml`은 한국시간 05:17, 07:17, 13:17, 19:17에 Gemini로 검증된 원고 대기열을 보충합니다. 미래 게시 예정 원고는 최대 7편을 유지하며, 하루 새로 작성하는 원고는 최대 3편입니다. 비어 있는 게시 날짜에 하루 1편씩 배정해 HTML·썸네일·목록·사이트맵을 미리 Cloudflare Pages에 배포합니다. `dist/_worker.js`가 요청 시각을 검사해 게시 예정일 08:00 KST 전에는 칼럼 본문, 원본 Markdown, 썸네일, 목록, 사이트맵에서 해당 글을 숨깁니다. 08:00부터 별도 GitHub 예약 작업을 기다리지 않고 공개합니다. `dist/_routes.json`은 이 검사에 필요한 경로에서만 Pages Function을 실행합니다.
+
+원고 준비 작업은 배포 후 `/column-release-status`를 확인해 다음 날 글이 Cloudflare에 도착했는지 검사합니다. 기존 `.github/workflows/daily-column.yml`의 08:00~10:00 실행은 실제 사이트 노출 확인과 배포 실패 시 복구를 맡습니다. 하루 1편만 게시되며, Gemini 또는 GitHub 예약 실행이 잠시 늦어져도 미리 배포한 글은 예정 시각에 공개됩니다. Pages Function 호출 한도나 Cloudflare 장애는 별도 운영 제약입니다.
+
 ## 칼럼 추가
 
 `dist/articles/`에 영문 소문자와 하이픈으로 된 이름의 Markdown 파일을 추가합니다. 파일 이름이 공개 주소가 됩니다. 예를 들어 `overseas-filing-guide.md`는 `column-overseas-filing-guide.html`로 생성됩니다. 파일 상단 형식은 다음과 같습니다.

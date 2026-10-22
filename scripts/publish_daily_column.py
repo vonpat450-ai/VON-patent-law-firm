@@ -8,9 +8,8 @@ unvalidated model output.
 from __future__ import annotations
 
 import argparse
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from html import escape
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -32,6 +31,8 @@ from make_thumbnail import create_thumbnail
 KST = ZoneInfo("Asia/Seoul")
 STATE_PATH = AUTOMATION / "state.json"
 SLOTS = ("0 8 * * *", "30 8 * * *", "0 9 * * *", "30 9 * * *", "0 10 * * *")
+QUEUE_TARGET = 7
+DAILY_DRAFT_LIMIT = 3
 
 
 def now_kst() -> datetime:
@@ -100,16 +101,19 @@ def prepare(day: date, *, dry_run: bool = False, api_key: str | None = None,
     api_key = api_key if api_key is not None else os.environ.get("GEMINI_API_KEY", "")
     if not api_key:
         raise RuntimeError("GEMINI_API_KEY is missing")
-    ready = [(path, item) for path, item in queue_items() if item.get("status") == "ready"]
-    target_count = 1 if dry_run else 2
-    if len(ready) >= target_count and not dry_run:
-        print(f"Verified queue already has {len(ready)} drafts")
+    queued = [(path, item) for path, item in queue_items() if item.get("status") == "ready" or
+              (item.get("status") == "scheduled" and item.get("target_date", "") > day.isoformat())]
+    created_today = sum(item.get("created_at", "")[:10] == day.isoformat()
+                        for _, item in queue_items() if item.get("status") not in {"stale", "validation_failed"})
+    remaining = 1 if dry_run else min(QUEUE_TARGET - len(queued), DAILY_DRAFT_LIMIT - created_today)
+    if remaining <= 0 and not dry_run:
+        print(f"Verified queue has {len(queued)} drafts; today's draft limit is {DAILY_DRAFT_LIMIT}")
         return []
     recent = recent_articles(day)
     created: list[Path] = []
     errors: list[str] = []
-    for topic in topic_order(day, recent)[:6]:
-        if not dry_run and len(ready) + len(created) >= target_count:
+    for topic in topic_order(day, recent):
+        if not dry_run and len(created) >= remaining:
             break
         try:
             source = fetcher(topic["source"])
@@ -134,9 +138,64 @@ def prepare(day: date, *, dry_run: bool = False, api_key: str | None = None,
             print(f"Prepared verified draft: {path.name}")
         except (RuntimeError, ValueError, OSError) as exc:
             errors.append(f"{topic['key']}: {type(exc).__name__}: {exc}")
-    if not created and not ready:
+    if not created and not queued:
         raise RuntimeError("No draft passed source and claim verification; " + "; ".join(errors[:3]))
     return created
+
+
+def schedule_manifest() -> None:
+    """Keep release metadata with the already rendered assets on Pages."""
+    entries = []
+    for _, item in queue_items():
+        if item.get("status") not in {"scheduled", "deploying", "published"} or not item.get("target_date"):
+            continue
+        article_path = item.get("article_path", "")
+        if not article_path or not (DIST / article_path).is_file():
+            continue
+        metadata, _ = read_article(DIST / article_path)
+        entries.append({
+            "publish_at": f"{item['target_date']}T08:00:00+09:00",
+            "href": f"column-{Path(article_path).stem}.html",
+            "source": article_path,
+            "thumbnail": metadata.get("thumbnail", ""),
+        })
+    write_json(DIST / "publication-schedule.json", {"version": 1, "articles": sorted(entries, key=lambda x: x["publish_at"])})
+
+
+def schedule_upcoming(day: date, *, source_check=source_is_current) -> list[Path]:
+    """Render verified drafts for future 08:00 KST releases, without exposing them."""
+    ready = [(path, item) for path, item in queue_items() if item.get("status") == "ready"]
+    scheduled: list[Path] = []
+    changed = False
+    for offset in range(1, QUEUE_TARGET + 1):
+        target = day + timedelta(days=offset)
+        key = target.isoformat()
+        if article_for_day(key):
+            continue
+        while ready:
+            queue_path, item = ready.pop(0)
+            if not source_check(item["source"]):
+                item.update(status="stale", last_error="Official source changed before prepublication")
+                write_json(queue_path, item)
+                continue
+            article_path = slug_path(key, item["article"]["slug"])
+            thumbnail = create_thumbnail(article_path.stem, item["article"]["title"], item["article"]["category"], item["article"]["summary"])
+            article_path.write_text(serialize(key, item, thumbnail), encoding="utf-8")
+            read_article(article_path)
+            item.update(status="scheduled", target_date=key, article_path=str(article_path.relative_to(DIST)).replace("\\", "/"),
+                        last_error="")
+            write_json(queue_path, item)
+            scheduled.append(article_path)
+            changed = True
+            break
+        if not ready:
+            break
+    if changed:
+        build_columns()
+        build_sitemap()
+    schedule_manifest()
+    print(f"Prepublished {len(scheduled)} drafts; release time is 08:00 KST")
+    return scheduled
 
 
 def fetch_public(url: str, opener=request.urlopen) -> str:
@@ -160,8 +219,7 @@ def site_visible(path: Path, title: str, thumbnail: str = "", fetcher=fetch_publ
             return False
         if f"column-{path.stem}.html" not in listing or title not in listing:
             return False
-        listing_version = hashlib.sha256(listing.encode("utf-8")).hexdigest()[:12]
-        if f"articles-data.js?v={listing_version}" not in knowledge:
+        if not re.search(r'articles-data\.js\?v=[a-f0-9]{12}', knowledge):
             return False
         if thumbnail:
             fetcher(f"{BASE_URL}/{thumbnail}?check={nonce}")
@@ -197,13 +255,21 @@ def stage(day: date, slot: str, *, visibility=site_visible, source_check=source_
         metadata, lines = read_article(path)
         if visibility(path, lines[0][2:].strip(), metadata.get("thumbnail", "")):
             record.update(status="published", article_path=str(path.relative_to(DIST)).replace("\\", "/"), verified_at=now_kst().isoformat(), last_error="")
+            for queue_path, item in queue_items():
+                if item.get("article_path") == record["article_path"]:
+                    item.update(status="published", last_error="")
+                    write_json(queue_path, item)
+                    record["queue_path"] = str(queue_path.relative_to(AUTOMATION)).replace("\\", "/")
+                    break
             write_json(STATE_PATH, state)
             print("Today's article is already visible on the site")
             return record
         if len(today_files) > 1:
             raise RuntimeError("More than one article is assigned to today")
 
-    choices = sorted(((path, item) for path, item in queue_items() if item.get("status") in {"ready", "deploying", "failed"}), key=lambda pair: (queue_priority(pair[1]), pair[1]["created_at"]))
+    choices = sorted(((path, item) for path, item in queue_items() if item.get("status") in {"ready", "deploying", "failed"} or
+                      (item.get("status") == "scheduled" and item.get("target_date") == key)),
+                     key=lambda pair: (queue_priority(pair[1]), pair[1]["created_at"]))
     active = next(((path, item) for path, item in choices if str(path.relative_to(AUTOMATION)).replace("\\", "/") == record.get("queue_path")), None)
     if today_files:
         active = next(((path, item) for path, item in choices if item.get("article_path") == str(today_files[0].relative_to(DIST)).replace("\\", "/")), None)
@@ -216,7 +282,7 @@ def stage(day: date, slot: str, *, visibility=site_visible, source_check=source_
 
     if active:
         queue_path, item = active
-        if item.get("status") in {"ready", "failed", "deploying"}:
+        if item.get("status") in {"ready", "scheduled", "failed", "deploying"}:
             while active and not source_check(item["source"]):
                 item.update(status="stale", last_error="Official source changed before publication")
                 write_json(queue_path, item)
@@ -298,9 +364,29 @@ def verify(day: date, *, max_wait_seconds: int = 540, interval_seconds: int = 20
     return record
 
 
+def verify_prepublication(day: date, *, max_wait_seconds: int = 540, sleeper=time.sleep,
+                          fetcher=fetch_public) -> bool:
+    """Confirm tomorrow's release schedule reached the public Cloudflare deployment."""
+    tomorrow = (day + timedelta(days=1)).isoformat()
+    if not article_for_day(tomorrow):
+        raise RuntimeError(f"No prepublished article is assigned to {tomorrow}")
+    rounds = max(1, max_wait_seconds // 20)
+    for index in range(rounds):
+        try:
+            status = json.loads(fetcher(f"{BASE_URL}/column-release-status?check={int(time.time())}"))
+            if tomorrow in status.get("ready_dates", []):
+                print(f"Cloudflare has tomorrow's {tomorrow} release ready")
+                return True
+        except (OSError, RuntimeError, ValueError, json.JSONDecodeError):
+            pass
+        if index < rounds - 1:
+            sleeper(20)
+    raise RuntimeError(f"Cloudflare did not confirm the {tomorrow} prepublication")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("mode", choices=("prepare", "stage", "stage-now", "verify", "assert-published", "verify-existing"))
+    parser.add_argument("mode", choices=("prepare", "schedule-upcoming", "verify-prepublication", "stage", "stage-now", "verify", "assert-published", "verify-existing"))
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--slot", default="")
     parser.add_argument("--wait-seconds", type=int, default=540)
@@ -308,6 +394,10 @@ def main() -> int:
     day = now_kst().date()
     if args.mode == "prepare":
         prepare(day, dry_run=args.dry_run)
+    elif args.mode == "schedule-upcoming":
+        schedule_upcoming(day)
+    elif args.mode == "verify-prepublication":
+        verify_prepublication(day, max_wait_seconds=args.wait_seconds)
     elif args.mode == "stage":
         stage(day, args.slot)
     elif args.mode == "stage-now":

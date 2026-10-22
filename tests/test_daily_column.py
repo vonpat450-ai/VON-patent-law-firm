@@ -1,6 +1,6 @@
 """Simulation of the five publication and failure paths without API charges."""
 
-from datetime import date
+from datetime import date, timedelta
 import json
 from pathlib import Path
 import sys
@@ -171,6 +171,72 @@ class PublicationTests(unittest.TestCase):
         publisher.prepare(date(2026, 10, 22), dry_run=True, api_key="fake", fetcher=lambda _: SOURCE, drafter=fake_drafter)
         self.assertEqual(len(attempts), 2)
         self.assertEqual(len(list(self.queue.glob("*.json"))), 0)
+
+    def test_prepublication_assigns_one_future_date_per_draft(self) -> None:
+        day = date(2026, 10, 22)
+        second = json.loads(self.item_path.read_text(encoding="utf-8"))
+        second["article"]["slug"] = "another-pct-guide"
+        publisher.write_json(self.queue / "second.json", second)
+        paths = publisher.schedule_upcoming(day, source_check=lambda _: True)
+        self.assertEqual(len(paths), 2)
+        self.assertEqual([build_column.read_article(path)[0]["published"] for path in paths],
+                         [(day + timedelta(days=offset)).isoformat() for offset in (1, 2)])
+        manifest = json.loads((self.dist / "publication-schedule.json").read_text(encoding="utf-8"))
+        self.assertEqual(len(manifest["articles"]), 2)
+        self.assertEqual(manifest["articles"][0]["publish_at"], "2026-10-23T08:00:00+09:00")
+        self.assertEqual(publisher.schedule_upcoming(day, source_check=lambda _: True), [])
+
+    def test_queue_is_refilled_only_up_to_seven_and_three_per_day(self) -> None:
+        day = date(2026, 10, 22)
+        self.item["created_at"] = "2026-10-21T06:00:00+09:00"
+        publisher.write_json(self.item_path, self.item)
+        for index in range(5):
+            extra = json.loads(self.item_path.read_text(encoding="utf-8"))
+            extra["article"]["slug"] = f"extra-guide-{index}"
+            publisher.write_json(self.queue / f"extra-{index}.json", extra)
+        calls = []
+
+        def draft(day, topic, source, recent, api_key):
+            calls.append(topic["key"])
+            article = valid_article()
+            article["slug"] = "newly-prepared-guide"
+            return article
+
+        publisher.prepare(day, api_key="fake", fetcher=lambda _: SOURCE, drafter=draft)
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(len(list(self.queue.glob("*.json"))), 7)
+        publisher.prepare(day, api_key="fake", fetcher=lambda _: SOURCE, drafter=draft)
+        self.assertEqual(len(calls), 1)
+
+    def test_live_verifier_accepts_time_filtered_listing(self) -> None:
+        path = self.dist / "articles" / "daily-2026-10-23-test.md"
+        thumbnail = self.fake_thumbnail(path.stem, "title", "해외특허", "summary")
+        path.write_text(publisher.serialize("2026-10-23", self.item, thumbnail), encoding="utf-8")
+        title = self.item["article"]["title"]
+
+        def fetch(url):
+            if "articles-data.js" in url:
+                return f'window.VON_ARTICLES=[{{"href":"column-{path.stem}.html","title":"{title}"}}];'
+            if "knowledge.html" in url:
+                return '<script src="articles-data.js?v=123456789abc"></script>'
+            return f'<h1>{title}</h1>'
+
+        self.assertTrue(publisher.site_visible(path, title, thumbnail, fetcher=fetch))
+
+    def test_prepublication_requires_cloudflare_confirmation(self) -> None:
+        day = date(2026, 10, 22)
+        publisher.schedule_upcoming(day, source_check=lambda _: True)
+        calls = []
+
+        def fetch(url):
+            calls.append(url)
+            return json.dumps({"ready_dates": ["2026-10-23"]})
+
+        self.assertTrue(publisher.verify_prepublication(day, max_wait_seconds=20, fetcher=fetch))
+        self.assertEqual(len(calls), 1)
+        with self.assertRaisesRegex(RuntimeError, "did not confirm"):
+            publisher.verify_prepublication(day, max_wait_seconds=20,
+                                            fetcher=lambda _: json.dumps({"ready_dates": []}))
 
 
 if __name__ == "__main__":

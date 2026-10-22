@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "include": ["/column-*", "/articles-data.js", "/sitemap.xml", "/articles/*", "/assets/*-thumb.webp", "/publication-schedule.json"],
+  "exclude": []
+}

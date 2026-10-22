@@ -2,7 +2,7 @@ name: Prepare verified patent columns
 
 on:
   schedule:
-    - cron: "17 5,7 * * *"
+    - cron: "17 5,7,13,19 * * *"
       timezone: "Asia/Seoul"
   workflow_dispatch:
     inputs:
@@ -39,10 +39,13 @@ jobs:
           else
             python3 scripts/publish_daily_column.py prepare
           fi
+      - name: Predeploy verified columns for future 08:00 releases
+        if: ${{ !cancelled() && inputs.dry_run != true }}
+        run: python3 scripts/publish_daily_column.py schedule-upcoming
       - name: Preserve verified queue
-        if: ${{ inputs.dry_run != true }}
+        if: ${{ !cancelled() && inputs.dry_run != true }}
         run: |
-          git add -A automation/queue/
+          git add -A automation/queue/ dist/
           if git diff --cached --quiet; then
             echo "Verified queue is already full."
             exit 0
@@ -51,3 +54,6 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "content: prepare verified patent columns"
           git push
+      - name: Confirm tomorrow's timed release is deployed
+        if: ${{ !cancelled() && inputs.dry_run != true }}
+        run: python3 scripts/publish_daily_column.py verify-prepublication --wait-seconds 540
