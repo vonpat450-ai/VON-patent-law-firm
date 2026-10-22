@@ -385,3 +385,18 @@ html,body,button,input,select,textarea{font-family:'Pretendard','Malgun Gothic',
 
 /* SEO copy keeps existing visual hierarchy while using semantic headings and links. */
 .article-copy h3{font-size:16px;line-height:1.4;display:block;margin:0;font-weight:700}.section-description a,.info-note a,.overseas-note a{color:#276f89;text-decoration:underline;text-underline-offset:3px}
+
+/* Nine columns per knowledge page; keep the existing card grid. */
+.article-pagination{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:38px}
+.article-pagination a{min-width:38px;min-height:38px;display:inline-flex;align-items:center;justify-content:center;padding:7px 11px;border:1px solid #d9e6ea;border-radius:6px;color:#4a6b77;font-size:13px;font-weight:700}
+.article-pagination a:hover,.article-pagination a[aria-current="page"]{background:#102b34;border-color:#102b34;color:#fff}
+
+/* Source-linked comparisons in automated columns. */
+.insight-table-wrap{width:100%;overflow-x:auto;margin:23px 0 27px;border:1px solid #dce8ec;border-radius:8px}
+.insight-table{width:100%;border-collapse:collapse;font-size:13px;line-height:1.6}
+.insight-table th,.insight-table td{padding:13px 15px;text-align:left;vertical-align:top;border-right:1px solid #e4edef;border-bottom:1px solid #e4edef}
+.insight-table th{background:#f1f7f9;color:#173b47;font-weight:800}
+.insight-table td{color:#56737e}
+.insight-table tr>*:last-child{border-right:0}
+.insight-table tbody tr:last-child td{border-bottom:0}
+@media(max-width:520px){.insight-table{min-width:480px}}

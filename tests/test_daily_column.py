@@ -43,6 +43,34 @@ def valid_article() -> dict:
 
 
 class DraftTests(unittest.TestCase):
+    def test_recent_window_covers_ninety_days(self) -> None:
+        with tempfile.TemporaryDirectory(dir=Path(__file__).resolve().parents[1]) as folder:
+            dist = Path(folder)
+            (dist / "articles").mkdir()
+            with patch.object(evidence, "DIST", dist), patch.object(evidence, "QUEUE", dist / "queue"):
+                for age in (89, 91):
+                    day = date(2026, 10, 22) - timedelta(days=age)
+                    (dist / "articles" / f"test-{age}.md").write_text(
+                        f"---\npublished: {day.isoformat()}\n---\n# {age}일 전 글\n## 요약\n", encoding="utf-8")
+                titles = [item["title"] for item in evidence.recent_articles(date(2026, 10, 22))]
+        self.assertIn("89일 전 글", titles)
+        self.assertNotIn("91일 전 글", titles)
+
+    def test_fictional_example_is_rejected(self) -> None:
+        article = valid_article()
+        article["body"] += "\n가상 사례: A기업이 출원했다고 가정합니다."
+        with self.assertRaisesRegex(ValueError, "Fictional examples"):
+            evidence.validate_article(article, TOPIC, SOURCE, [])
+
+    def test_source_linked_comparison_table_renders(self) -> None:
+        article = valid_article()
+        article["body"] = article["body"].replace(
+            "## 2. 국가단계", "| 항목 | 확인할 내용 |\n| --- | --- |\n| 권리 | 현지 심사가 필요합니다〔1〕 |\n\n## 2. 국가단계", 1)
+        checked = evidence.validate_article(article, TOPIC, SOURCE, [])
+        body, _ = build_column.render_guide_body(["# 제목", "## 요약", *checked["body"].splitlines()])
+        self.assertIn('<table class="insight-table">', body)
+        self.assertIn('href="#source-1"', body)
+
     def test_unsupported_presentation_is_normalized_before_queueing(self) -> None:
         article = valid_article()
         article["body"] = article["body"].replace("## 1.", "## 도입 설명\n\n도입입니다.\n\n## 1.", 1)

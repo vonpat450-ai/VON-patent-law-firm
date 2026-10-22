@@ -187,6 +187,7 @@ def render_guide_body(lines: list[str]) -> tuple[str, str]:
     paragraph: list[str] = []
     block_name: str | None = None
     block_lines: list[str] = []
+    table_lines: list[str] = []
     section_open = False
 
     def linked(value: str) -> str:
@@ -196,6 +197,21 @@ def render_guide_body(lines: list[str]) -> tuple[str, str]:
         if paragraph:
             blocks.append(f'<p>{linked(" ".join(paragraph))}</p>')
             paragraph.clear()
+
+    def flush_table() -> None:
+        if not table_lines:
+            return
+        rows = [[cell.strip() for cell in row.strip().strip("|").split("|")] for row in table_lines]
+        if len(rows) < 3 or not 2 <= len(rows[0]) <= 4 or any(len(row) != len(rows[0]) for row in rows):
+            raise ValueError("guide table needs 2–4 columns and at least one data row")
+        if any(not re.fullmatch(r":?-{3,}:?", cell) for cell in rows[1]):
+            raise ValueError("guide table needs a Markdown header separator")
+        if any(not cell for row in [rows[0], *rows[2:]] for cell in row):
+            raise ValueError("guide table cells cannot be empty")
+        head = "".join(f'<th scope="col">{linked(cell)}</th>' for cell in rows[0])
+        body = "".join("<tr>" + "".join(f"<td>{linked(cell)}</td>" for cell in row) + "</tr>" for row in rows[2:])
+        blocks.append(f'<div class="insight-table-wrap"><table class="insight-table"><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table></div>')
+        table_lines.clear()
 
     def flush_block() -> None:
         nonlocal block_name
@@ -216,6 +232,11 @@ def render_guide_body(lines: list[str]) -> tuple[str, str]:
 
     for line in lines[2:]:
         value = line.strip()
+        if value.startswith("|") and value.endswith("|") and block_name is None:
+            flush_paragraph()
+            table_lines.append(value)
+            continue
+        flush_table()
         if value.startswith(":::"):
             flush_paragraph()
             if block_name is None and value in {":::takeaway", ":::checklist"}:
@@ -251,6 +272,7 @@ def render_guide_body(lines: list[str]) -> tuple[str, str]:
             paragraph.append(value)
     if block_name:
         raise ValueError("unclosed guide block")
+    flush_table()
     flush_paragraph()
     if section_open:
         blocks.append("</section>")
@@ -302,7 +324,7 @@ def render_page(path: Path, metadata: dict[str, str], lines: list[str]) -> dict[
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png?v=3">
   <link rel="shortcut icon" href="assets/favicon.ico?v=3">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon-180.png?v=3">
-  <link rel="stylesheet" href="style.css?v=seo-20261022">
+  <link rel="stylesheet" href="style.css?v=columns-20261022">
 </head>
 <body data-page="column" class="{'column-insight' if insight else ''}">
   <div id="app"></div>
@@ -329,7 +351,7 @@ def render_page(path: Path, metadata: dict[str, str], lines: list[str]) -> dict[
       {bottom}
     </main>
   </template>
-  <script src="app.js?v=seo-20261022" defer></script>
+  <script src="app.js?v=columns-20261022" defer></script>
 </body>
 </html>
 '''
