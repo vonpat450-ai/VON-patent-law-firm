@@ -174,9 +174,8 @@ def clean_article(raw: dict, topic: dict) -> dict:
         body = re.sub(r"\A# [^\n]+\n+", "", body)
         body = re.sub(r"(?m)^#{2,3}\s*0?([1-4])[.)]\s*", r"## \1. ", body)
         body = re.sub(r"(?m)^## (?:결론|정리|마지막으로)\s*$", "## 마무리", body)
-        # The guide renderer only accepts takeaway and checklist directives.
-        # Keep the words while removing decorative blocks and stray headings.
-        body = re.sub(r"(?ms)^:::(?:quote|cards|steps)\s*\n(.*?)\n:::\s*", lambda match: match.group(1).strip() + "\n\n", body)
+        # Keep validated editorial blocks so the published page retains its
+        # highlighted sentence, comparison cards and step list.
         # Gemini sometimes returns ordinary headings instead of the requested
         # fenced blocks. Canonicalize those purely presentational differences.
         if ":::takeaway" not in body:
@@ -232,6 +231,9 @@ def validate_article(article: dict, topic: dict, source: dict, recent: list[dict
         raise ValueError("Body length is outside the editorial range")
     if body.count(":::takeaway") != 1 or body.count(":::checklist") != 1:
         raise ValueError("Body needs a takeaway and checklist")
+    takeaway = re.search(r"(?ms)^:::takeaway\s*\n(.*?)\n:::", body)
+    if not takeaway or len([line for line in takeaway.group(1).splitlines() if line.strip()]) != 3:
+        raise ValueError("Takeaway needs exactly three short summary lines")
     if (not body.startswith(":::takeaway\n") or "## 1." not in body or "## 마무리" not in body
             or body.index(":::checklist") < body.index("## 1.")
             or body.index("## 마무리") < body.index(":::checklist")):

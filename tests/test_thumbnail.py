@@ -37,15 +37,17 @@ class ThumbnailTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "more than two lines"):
             make_thumbnail.title_lines("해외특허 국가단계 준비와 현지 심사 " * 4, font)
 
-    def test_panel_is_thirty_percent_black_with_opaque_white_border(self) -> None:
+    def test_future_panel_is_fifty_percent_black_with_opaque_white_border(self) -> None:
         with tempfile.TemporaryDirectory(dir=Path(__file__).resolve().parents[1]) as folder:
             target = Path(folder) / "example.webp"
             make_thumbnail.render_thumbnail(Image.new("RGB", (1200, 600), "#808080"), "특허 등록", target)
             with Image.open(target) as result:
-                # A point within the panel but above the glyphs: 128 * 0.7 ≈ 90.
+                # A point within the panel but above the glyphs: 128 * 0.5 ≈ 64.
                 interior = result.getpixel((600, 245))[0]
-                self.assertGreaterEqual(interior, 84)
-                self.assertLessEqual(interior, 97)
+                self.assertGreaterEqual(interior, 58)
+                self.assertLessEqual(interior, 71)
+                # Away from the panel the photograph is not darkened.
+                self.assertGreaterEqual(result.getpixel((40, 40))[0], 123)
                 font = ImageFont.truetype(str(make_thumbnail.FONT), make_thumbnail.TITLE_FONT_SIZE)
                 bounds = ImageDraw.Draw(Image.new("RGB", (1, 1))).textbbox((0, 0), "특허 등록", font=font)
                 border_y = (600 - (bounds[3] - bounds[1] + 116)) // 2

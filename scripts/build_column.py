@@ -58,6 +58,26 @@ def inline(value: str) -> str:
     return re.sub(r"\*\*(.+?)\*\*", lambda match: f"<strong>{match.group(1)}</strong>", escape(value))
 
 
+def takeaway_html(values: list[str], format_line=inline) -> str:
+    """Present an existing answer as three concise, normally weighted lines."""
+    if len(values) < 2:
+        raise ValueError("takeaway needs a conclusion and its conditions")
+    lines = list(values)
+    if len(lines) == 2:
+        sentences = re.split(r"(?<=[.!?])\s+", lines[1], maxsplit=1)
+        if len(sentences) == 1:
+            sentences = re.split(r",\s*", lines[1], maxsplit=1)
+        if len(sentences) == 1:
+            sentences = [lines[1], "상세 조건은 아래 본문에서 확인하세요."]
+        lines = [lines[0], *sentences]
+    if len(lines) > 3:
+        lines = [lines[0], lines[1], " ".join(lines[2:])]
+    return ('<div class="insight-takeaway"><span>먼저 알아둘 점</span>'
+            '<div class="insight-takeaway-lines">'
+            + "".join(f'<p>{format_line(line)}</p>' for line in lines)
+            + '</div></div>')
+
+
 def render_body(lines: list[str]) -> tuple[str, str]:
     blocks: list[str] = []
     sections: list[tuple[str, str]] = []
@@ -120,10 +140,7 @@ def render_insight_body(lines: list[str]) -> tuple[str, str]:
             return
         values = [value.strip() for value in directive_lines if value.strip()]
         if directive == "takeaway":
-            if len(values) < 2:
-                raise ValueError("takeaway needs a title and explanation")
-            blocks.append('<div class="insight-takeaway"><span>먼저 알아둘 점</span>'
-                          f'<h2>{inline(values[0])}</h2><p>{inline(" ".join(values[1:]))}</p></div>')
+            blocks.append(takeaway_html(values))
         elif directive == "quote":
             blocks.append(f'<blockquote class="insight-quote">{inline(" ".join(values))}</blockquote>')
         elif directive in {"cards", "steps"}:
@@ -189,13 +206,28 @@ def render_guide_body(lines: list[str]) -> tuple[str, str]:
     block_lines: list[str] = []
     table_lines: list[str] = []
     section_open = False
+    section_number = 0
+    first_paragraph_seen: set[int] = set()
+    auto_quote = not any(line.strip() == ":::quote" for line in lines)
+    auto_focus_box = not any(line.strip() in {":::cards", ":::steps"} or line.strip().startswith("|") for line in lines)
 
     def linked(value: str) -> str:
         return inline(value).replace("〔1〕", '<a class="source-ref" href="#source-1" aria-label="참고 자료 1">〔1〕</a>')
 
     def flush_paragraph() -> None:
         if paragraph:
-            blocks.append(f'<p>{linked(" ".join(paragraph))}</p>')
+            value = " ".join(paragraph)
+            if section_number == 1 and section_number not in first_paragraph_seen and auto_quote:
+                # Promote the already-sourced lead sentence; do not invent a claim.
+                parts = re.split(r"(?<=[.!?])\s+", value, maxsplit=1)
+                blocks.append(f'<blockquote class="insight-quote">{linked(parts[0])}</blockquote>')
+                if len(parts) > 1:
+                    blocks.append(f'<p>{linked(parts[1])}</p>')
+            elif section_number == 2 and section_number not in first_paragraph_seen and auto_focus_box:
+                blocks.append(f'<div class="insight-focus-box"><p>{linked(value)}</p></div>')
+            else:
+                blocks.append(f'<p>{linked(value)}</p>')
+            first_paragraph_seen.add(section_number)
             paragraph.clear()
 
     def flush_table() -> None:
@@ -217,9 +249,21 @@ def render_guide_body(lines: list[str]) -> tuple[str, str]:
         nonlocal block_name
         values = [item.strip() for item in block_lines if item.strip()]
         if block_name == "takeaway":
-            if len(values) < 2:
-                raise ValueError("guide takeaway needs a title and answer")
-            # The same answer is printed directly below the H1 in the hero.
+            blocks.append(takeaway_html(values, linked))
+        elif block_name == "quote":
+            if not values:
+                raise ValueError("guide quote cannot be empty")
+            blocks.append(f'<blockquote class="insight-quote">{linked(" ".join(values))}</blockquote>')
+        elif block_name in {"cards", "steps"}:
+            if not 2 <= len(values) <= 4:
+                raise ValueError("guide cards and steps need 2–4 entries")
+            items = []
+            for index, value in enumerate(values, 1):
+                parts = [part.strip() for part in value.removeprefix("- ").split(" | ", 1)]
+                if len(parts) != 2 or not all(parts):
+                    raise ValueError(f"{block_name} items need 'title | explanation'")
+                items.append(f'<li><span>{index:02d}</span><div><h4>{linked(parts[0])}</h4><p>{linked(parts[1])}</p></div></li>')
+            blocks.append(f'<ol class="insight-{block_name}">' + "".join(items) + "</ol>")
         elif block_name == "checklist":
             if not 3 <= len(values) <= 5 or any(not value.startswith("- ") for value in values):
                 raise ValueError("guide checklist needs 3–5 bullet items")
@@ -239,7 +283,7 @@ def render_guide_body(lines: list[str]) -> tuple[str, str]:
         flush_table()
         if value.startswith(":::"):
             flush_paragraph()
-            if block_name is None and value in {":::takeaway", ":::checklist"}:
+            if block_name is None and value in {":::takeaway", ":::checklist", ":::quote", ":::cards", ":::steps"}:
                 block_name = value[3:]
             elif block_name is not None and value == ":::":
                 flush_block()
@@ -255,10 +299,12 @@ def render_guide_body(lines: list[str]) -> tuple[str, str]:
             match = re.fullmatch(r"([1-4])\. (.+)", heading)
             if match:
                 number, title = match.groups()
+                section_number = int(number)
                 section_id = f"section-{number}"
                 toc.append(f'<li><a href="#{section_id}"><span>{int(number):02d}</span>{escape(title)}</a></li>')
                 blocks.append(f'<section class="insight-part" id="{section_id}"><span class="insight-part-label">{int(number):02d} · 핵심 질문</span><h2>{escape(title)}</h2>')
             elif heading in {"마무리", "FAQ"}:
+                section_number = 0
                 blocks.append(f'<section class="insight-part"><h2>{escape(heading)}</h2>')
             else:
                 raise ValueError("invalid guide section heading")
@@ -324,7 +370,7 @@ def render_page(path: Path, metadata: dict[str, str], lines: list[str]) -> dict[
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png?v=3">
   <link rel="shortcut icon" href="assets/favicon.ico?v=3">
   <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon-180.png?v=3">
-  <link rel="stylesheet" href="style.css?v=header-20261022">
+  <link rel="stylesheet" href="style.css?v=column-20261023">
 </head>
 <body data-page="column" class="{'column-insight' if insight else ''}">
   <div id="app"></div>

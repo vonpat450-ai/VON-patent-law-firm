@@ -26,7 +26,7 @@ TOPIC = {"key": "pct-national-phase", "category": "해외특허", "question": "P
 
 def valid_article() -> dict:
     paragraph = "PCT 국제출원만으로 각국의 등록 특허가 생기지 않습니다. 권리를 원하는 국가의 절차와 현재 사업 목표를 나누어 살펴봐야 합니다. " * 6
-    body = ":::takeaway\nPCT 다음에는 권리를 원하는 국가의 절차가 필요합니다.\n국가별 절차의 적용 여부는 실제 출원 상황에 따라 달라집니다. 먼저 목표 국가와 사업 계획을 정리하세요.\n:::\n\n"
+    body = ":::takeaway\nPCT 다음에는 권리를 원하는 국가의 절차가 필요합니다.\n국가별 절차는 실제 출원 상황에 따라 달라집니다.\n먼저 목표 국가와 사업 계획을 정리하세요.\n:::\n\n"
     body += "해외 판매 계획을 세우는 기업이라면 여러 국가에서 보호를 원하는 이유를 먼저 정리할 수 있습니다.\n\n"
     for number in range(1, 4):
         body += f"## {number}. 국가단계에서 무엇을 확인할까요?\n\n{paragraph}〔1〕\n\n"
@@ -71,14 +71,16 @@ class DraftTests(unittest.TestCase):
         self.assertIn('<table class="insight-table">', body)
         self.assertIn('href="#source-1"', body)
 
-    def test_unsupported_presentation_is_normalized_before_queueing(self) -> None:
+    def test_editorial_emphasis_is_preserved_before_queueing(self) -> None:
         article = valid_article()
         article["body"] = article["body"].replace("## 1.", "## 도입 설명\n\n도입입니다.\n\n## 1.", 1)
         article["body"] = article["body"].replace("## 2.", ":::quote\n검증된 자료의 설명입니다.\n:::\n\n## 2.", 1)
         cleaned = evidence.clean_article(article, TOPIC)
         evidence.validate_article(cleaned, TOPIC, SOURCE, [])
-        self.assertNotIn(":::quote", cleaned["body"])
+        self.assertIn(":::quote", cleaned["body"])
         self.assertNotIn("## 도입 설명", cleaned["body"])
+        rendered, _ = build_column.render_guide_body(["# 제목", "## 요약", *cleaned["body"].splitlines()])
+        self.assertIn('<blockquote class="insight-quote">', rendered)
 
     def test_presentational_variants_are_normalized(self) -> None:
         article = valid_article()
@@ -95,6 +97,9 @@ class DraftTests(unittest.TestCase):
         lines = ["# " + article["title"], "## 핵심 답", *article["body"].splitlines()]
         body, toc = build_column.render_guide_body(lines)
         self.assertIn('href="#source-1"', body)
+        self.assertIn("먼저 알아둘 점", body)
+        self.assertEqual(body.count('<div class="insight-takeaway-lines">'), 1)
+        self.assertIn('<div class="insight-focus-box">', body)
         self.assertEqual(toc.count('href="#section-'), 3)
 
     def test_invalid_draft_is_repaired_and_audited(self) -> None:

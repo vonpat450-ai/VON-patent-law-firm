@@ -53,6 +53,7 @@ def refresh(*, require_ai: bool, only: set[str] | None = None,
             slug, title, metadata["category"], metadata.get("list_summary", metadata.get("description", "")),
             label=entry["label"], visual=entry["visual"],
             require_ai=require_ai, reuse_photo=not force_photo,
+            panel_opacity=30,  # Existing thumbnails retain their original panel opacity.
         )
         source_text = article_path.read_text(encoding="utf-8")
         old_value = f"thumbnail: {metadata['thumbnail']}"

@@ -147,7 +147,7 @@ def title_lines(label: str, font: ImageFont.FreeTypeFont) -> list[str]:
     return [first, second]
 
 
-def render_thumbnail(photo: Image.Image, label: str, target: Path) -> None:
+def render_thumbnail(photo: Image.Image, label: str, target: Path, *, panel_opacity: int = 50) -> None:
     background = ImageOps.fit(photo.convert("RGB"), THUMB_SIZE, Image.Resampling.LANCZOS)
     font = ImageFont.truetype(str(FONT), TITLE_FONT_SIZE)
     lines = title_lines(label, font)
@@ -163,9 +163,11 @@ def render_thumbnail(photo: Image.Image, label: str, target: Path) -> None:
     top = (THUMB_SIZE[1] - panel_height) // 2
     rect = (left, top, left + panel_width, top + panel_height)
 
-    # 30% pure black, followed by an opaque white border. Keep the photo visible.
+    # A local title panel is the only darkening. The photograph has no gradient.
+    if not 0 <= panel_opacity <= 100:
+        raise ValueError("Panel opacity must be between 0 and 100 percent")
     panel = Image.new("RGBA", THUMB_SIZE, (0, 0, 0, 0))
-    ImageDraw.Draw(panel).rounded_rectangle(rect, radius=20, fill=(0, 0, 0, 77))
+    ImageDraw.Draw(panel).rounded_rectangle(rect, radius=20, fill=(0, 0, 0, round(255 * panel_opacity / 100)))
     frame = Image.alpha_composite(background.convert("RGBA"), panel)
     draw = ImageDraw.Draw(frame)
     draw.rounded_rectangle(rect, radius=20, outline=(255, 255, 255, 255), width=4)
@@ -181,7 +183,7 @@ def render_thumbnail(photo: Image.Image, label: str, target: Path) -> None:
 
 def create_thumbnail(slug: str, title: str, category: str, description: str = "",
                      *, label: str = "", visual: str = "", require_ai: bool = False,
-                     reuse_photo: bool = False) -> str:
+                     reuse_photo: bool = False, panel_opacity: int = 50) -> str:
     if slug != "pct-country-strategy" and not re.fullmatch(
         r"daily-[0-9]{4}-[0-9]{2}-[0-9]{2}(?:-[a-z0-9]+)*", slug
     ):
@@ -213,7 +215,7 @@ def create_thumbnail(slug: str, title: str, category: str, description: str = ""
     # Save the clean source photo so a later layout revision needs no new AI call.
     ImageOps.fit(photo.convert("RGB"), THUMB_SIZE, Image.Resampling.LANCZOS).save(
         raw_target, "WEBP", quality=88, method=6)
-    render_thumbnail(photo, short_label(title, category, label), target)
+    render_thumbnail(photo, short_label(title, category, label), target, panel_opacity=panel_opacity)
     return f"assets/{target.name}"
 
 
