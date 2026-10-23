@@ -359,7 +359,13 @@ def render_page(path: Path, metadata: dict[str, str], lines: list[str]) -> dict[
     target = DIST / f"column-{path.stem}.html"
     target.write_text(document, encoding="utf-8")
     print(f"Wrote {target.name}")
-    return {"title": title, "subtitle": metadata.get("list_summary", subtitle), "category": category, "published": metadata["published"], "href": target.name, "thumbnail": metadata.get("thumbnail", "")}
+    thumbnail = metadata.get("thumbnail", "")
+    if thumbnail:
+        # Cloudflare may cache an unchanged asset URL for four hours. A content
+        # hash lets visitors see a revised thumbnail as soon as it is deployed.
+        digest = hashlib.sha256((DIST / thumbnail).read_bytes()).hexdigest()[:12]
+        thumbnail = f"{thumbnail}?v={digest}"
+    return {"title": title, "subtitle": metadata.get("list_summary", subtitle), "category": category, "published": metadata["published"], "href": target.name, "thumbnail": thumbnail}
 
 
 def main() -> None:
