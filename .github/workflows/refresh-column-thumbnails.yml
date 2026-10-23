@@ -28,7 +28,7 @@ jobs:
       - name: Generate subject photos and compose thumbnails
         env:
           MAGNIFIC_API_KEY: ${{ secrets.MAGNIFIC_API_KEY }}
-        run: python3 scripts/refresh_thumbnails.py --require-ai
+        run: python3 scripts/refresh_thumbnails.py
       - name: Rebuild article listing and pages
         run: |
           python3 scripts/build_column.py
