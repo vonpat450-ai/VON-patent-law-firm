@@ -4,7 +4,7 @@ category: 해외특허
 layout: guide
 tags: 해외특허 · 특허 실무
 hero: assets/pct-column-hero.webp
-thumbnail: assets/daily-2026-10-22-first-steps-for-foreign-patent-protection-canva.webp
+thumbnail: assets/daily-2026-10-22-first-steps-for-foreign-patent-protection-thumb.webp
 list_summary: 해외에서 자사 기술과 제품을 보호받기 위해 가장 먼저 확인해야 할 속지주의 원칙, 출원 경로, 우선권 기간 및 비밀유지 조건을 안내합니다.
 description: 해외 특허 보호를 준비할 때 필수적으로 검토해야 하는 속지주의 원칙, 3가지 출원 경로(개별국가·지역·PCT), 우선권 12개월 유효기간 및 출원 전 비밀유지 요건을 정리합니다.
 related_url: overseas.html
