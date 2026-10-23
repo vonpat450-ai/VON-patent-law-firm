@@ -120,36 +120,80 @@ def magnific_photo(prompt: str, api_key: str) -> Image.Image:
     raise TimeoutError("Magnific image task did not complete in time")
 
 
+THUMB_SIZE = (1200, 600)
+TITLE_FONT_SIZE = 78  # About 105 pt at the example's 1600-pixel width.
+TITLE_MAX_WIDTH = 920
+
+
+def title_lines(label: str, font: ImageFont.FreeTypeFont) -> list[str]:
+    """Keep one fixed font size and a maximum of two balanced lines."""
+    label = re.sub(r"\s+", " ", label).strip()
+    if not label:
+        raise ValueError("Thumbnail label is empty")
+    measure = ImageDraw.Draw(Image.new("RGB", (1, 1)))
+    width = lambda value: measure.textbbox((0, 0), value, font=font)[2]
+    if width(label) <= TITLE_MAX_WIDTH:
+        return [label]
+    candidates = []
+    for index in range(1, len(label)):
+        first, second = label[:index].strip(), label[index:].strip()
+        if first and second and max(width(first), width(second)) <= TITLE_MAX_WIDTH:
+            gap = abs(width(first) - width(second))
+            split_penalty = 0 if label[index - 1:index] == " " or label[index:index + 1] == " " else 100
+            candidates.append((gap + split_penalty, first, second))
+    if not candidates:
+        raise ValueError("Thumbnail label needs more than two lines; choose a shorter phrase")
+    _, first, second = min(candidates)
+    return [first, second]
+
+
 def render_thumbnail(photo: Image.Image, label: str, target: Path) -> None:
-    frame = ImageOps.fit(photo.convert("RGB"), (1200, 600), Image.Resampling.LANCZOS)
-    frame = Image.alpha_composite(frame.convert("RGBA"), Image.new("RGBA", frame.size, (9, 34, 53, 34)))
+    background = ImageOps.fit(photo.convert("RGB"), THUMB_SIZE, Image.Resampling.LANCZOS)
+    font = ImageFont.truetype(str(FONT), TITLE_FONT_SIZE)
+    lines = title_lines(label, font)
+    measure = ImageDraw.Draw(background)
+    line_boxes = [measure.textbbox((0, 0), line, font=font) for line in lines]
+    text_width = max(box[2] - box[0] for box in line_boxes)
+    line_height = max(box[3] - box[1] for box in line_boxes)
+    line_gap = 18 if len(lines) == 2 else 0
+    text_height = len(lines) * line_height + line_gap
+    panel_width = max(400, min(1080, text_width + 176))
+    panel_height = text_height + 116
+    left = (THUMB_SIZE[0] - panel_width) // 2
+    top = (THUMB_SIZE[1] - panel_height) // 2
+    rect = (left, top, left + panel_width, top + panel_height)
+
+    # 30% pure black, followed by an opaque white border. Keep the photo visible.
+    panel = Image.new("RGBA", THUMB_SIZE, (0, 0, 0, 0))
+    ImageDraw.Draw(panel).rounded_rectangle(rect, radius=20, fill=(0, 0, 0, 77))
+    frame = Image.alpha_composite(background.convert("RGBA"), panel)
     draw = ImageDraw.Draw(frame)
-    font_size = 66
-    while True:
-        font = ImageFont.truetype(str(FONT), font_size)
-        bounds = draw.textbbox((0, 0), label, font=font)
-        text_width = bounds[2] - bounds[0]
-        if text_width <= 980 or font_size <= 38:
-            break
-        font_size -= 2
-    panel_width = min(1080, text_width + 100)
-    left = (1200 - panel_width) // 2
-    draw.rounded_rectangle((left, 238, left + panel_width, 362), radius=14, fill=(7, 32, 47, 222))
-    text_height = bounds[3] - bounds[1]
-    draw.text((600 - text_width / 2, 300 - text_height / 2 - bounds[1]), label,
-              font=font, fill=(255, 255, 255, 255))
+    draw.rounded_rectangle(rect, radius=20, outline=(255, 255, 255, 255), width=4)
+    cursor = THUMB_SIZE[1] / 2 - text_height / 2
+    for line, bounds in zip(lines, line_boxes):
+        actual_width = bounds[2] - bounds[0]
+        draw.text((THUMB_SIZE[0] / 2 - actual_width / 2 - bounds[0], cursor - bounds[1]),
+                  line, font=font, fill=(255, 255, 255, 255))
+        cursor += line_height + line_gap
     target.parent.mkdir(parents=True, exist_ok=True)
     frame.convert("RGB").save(target, "WEBP", quality=86, method=6)
 
 
 def create_thumbnail(slug: str, title: str, category: str, description: str = "",
-                     *, label: str = "", visual: str = "", require_ai: bool = False) -> str:
-    if not re.fullmatch(r"daily-[0-9]{4}-[0-9]{2}-[0-9]{2}(?:-[a-z0-9]+)*", slug):
+                     *, label: str = "", visual: str = "", require_ai: bool = False,
+                     reuse_photo: bool = False) -> str:
+    if slug != "pct-country-strategy" and not re.fullmatch(
+        r"daily-[0-9]{4}-[0-9]{2}-[0-9]{2}(?:-[a-z0-9]+)*", slug
+    ):
         raise ValueError("Invalid daily column slug")
     target = ASSETS / f"{slug}-thumb.webp"
+    raw_target = ASSETS / f"{slug}-photo.webp"
     api_key = os.environ.get("MAGNIFIC_API_KEY", "")
     photo = None
-    if api_key:
+    if reuse_photo and raw_target.is_file():
+        with Image.open(raw_target) as original:
+            photo = original.convert("RGB")
+    if photo is None and api_key:
         try:
             photo = magnific_photo(visual_prompt(title, category, description, visual), api_key)
             print(f"Magnific image generated for {slug}")
@@ -157,7 +201,7 @@ def create_thumbnail(slug: str, title: str, category: str, description: str = ""
             if require_ai:
                 raise RuntimeError("Magnific image unavailable") from exc
             print(f"Magnific image unavailable ({type(exc).__name__}); using licensed photo")
-    elif require_ai:
+    elif photo is None and require_ai:
         raise RuntimeError("MAGNIFIC_API_KEY is missing")
     if photo is None:
         theme = theme_for(title)
@@ -166,6 +210,9 @@ def create_thumbnail(slug: str, title: str, category: str, description: str = ""
         source = ASSETS / SOURCES[theme]
         with Image.open(source) as original:
             photo = original.convert("RGB")
+    # Save the clean source photo so a later layout revision needs no new AI call.
+    ImageOps.fit(photo.convert("RGB"), THUMB_SIZE, Image.Resampling.LANCZOS).save(
+        raw_target, "WEBP", quality=88, method=6)
     render_thumbnail(photo, short_label(title, category, label), target)
     return f"assets/{target.name}"
 

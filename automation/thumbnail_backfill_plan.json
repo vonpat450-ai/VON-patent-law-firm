@@ -1,5 +1,5 @@
 {
-  "note": "Existing published columns only. Apply after the scheduled column and thumbnail are verified on the live site. This file does not trigger generation or publication.",
+  "note": "Existing published and prepublished columns. The refresh workflow creates a clean subject image, then applies the shared Pretendard thumbnail layout.",
   "items": [
     {
       "article": "dist/articles/pct-country-strategy.md",
@@ -15,7 +15,7 @@
     },
     {
       "article": "dist/articles/daily-2026-10-22-first-steps-for-foreign-patent-protection.md",
-      "thumbnail": "dist/assets/daily-2026-10-22-first-steps-for-foreign-patent-protection-canva.webp",
+      "thumbnail": "dist/assets/daily-2026-10-22-first-steps-for-foreign-patent-protection-thumb.webp",
       "label": "해외특허 첫걸음",
       "visual": "A precision engineered product viewed beside a subtle glass globe and world map, suggesting the first decision in international patent protection"
     },
@@ -24,6 +24,30 @@
       "thumbnail": "dist/assets/daily-2026-10-22-manual-patent-examination-process-criteria-thumb.webp",
       "label": "특허 심사 기준",
       "visual": "A patent examiner's desk with technical drawings and a precisely machined prototype, photorealistic and free of legible text"
+    },
+    {
+      "article": "dist/articles/daily-2026-10-23-pct-national-phase-preparation-guide.md",
+      "thumbnail": "dist/assets/daily-2026-10-23-pct-national-phase-preparation-guide-thumb.webp",
+      "label": "PCT 국가단계 준비",
+      "visual": "A refined glass globe with international routes and precision metal components on an engineering blueprint, photorealistic navy and silver"
+    },
+    {
+      "article": "dist/articles/daily-2026-10-24-how-to-write-patent-specification.md",
+      "thumbnail": "dist/assets/daily-2026-10-24-how-to-write-patent-specification-thumb.webp",
+      "label": "특허 명세서 작성",
+      "visual": "Neatly arranged patent technical drawings, a metal prototype and drafting tools on a blue gray work desk, photorealistic and no legible words"
+    },
+    {
+      "article": "dist/articles/daily-2026-10-25-patent-disclosure-before-filing.md",
+      "thumbnail": "dist/assets/daily-2026-10-25-patent-disclosure-before-filing-thumb.webp",
+      "label": "출원 전 공개 주의",
+      "visual": "An unreleased engineering prototype and confidential technical sketches on a dark navy desk, controlled soft light, photorealistic"
+    },
+    {
+      "article": "dist/articles/daily-2026-10-26-using-pct-international-search-report.md",
+      "thumbnail": "dist/assets/daily-2026-10-26-using-pct-international-search-report-thumb.webp",
+      "label": "PCT 국제조사 활용",
+      "visual": "Patent research papers and technical drawings beside a magnifying glass and a precision mechanical part, photorealistic navy silver palette"
     }
   ]
 }
