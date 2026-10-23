@@ -2,6 +2,15 @@ name: Refresh existing column thumbnails
 
 on:
   workflow_dispatch:
+    inputs:
+      only:
+        description: "Optional comma-separated article slugs to refresh"
+        type: string
+        default: ""
+      force_ai:
+        description: "Generate fresh Magnific photos for selected slugs; fail if unavailable"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -28,6 +37,8 @@ jobs:
       - name: Generate subject photos and compose thumbnails
         env:
           MAGNIFIC_API_KEY: ${{ secrets.MAGNIFIC_API_KEY }}
+          THUMBNAIL_ONLY: ${{ inputs.only }}
+          THUMBNAIL_FORCE_AI: ${{ inputs.force_ai }}
         run: python3 scripts/refresh_thumbnails.py
       - name: Rebuild article listing and pages
         run: |
