@@ -18,6 +18,14 @@
       "verified_at": "2026-10-23T10:04:27.559247+09:00",
       "last_error": "",
       "queue_path": "queue/2026-10-21-pct-national-phase-pct-national-phase-preparation-guide.json"
+    },
+    "2026-10-24": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-10-24-how-to-write-patent-specification.md",
+      "verified_at": "2026-10-24T10:13:34.582162+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-10-22-patent-description-how-to-write-patent-specification.json"
     }
   }
 }
