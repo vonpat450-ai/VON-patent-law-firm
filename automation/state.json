@@ -26,6 +26,14 @@
       "verified_at": "2026-10-24T10:13:34.582162+09:00",
       "last_error": "",
       "queue_path": "queue/2026-10-22-patent-description-how-to-write-patent-specification.json"
+    },
+    "2026-10-25": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-10-25-patent-disclosure-before-filing.md",
+      "verified_at": "2026-10-25T09:39:14.128029+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-10-22-pre-disclosure-patent-disclosure-before-filing.json"
     }
   }
 }
