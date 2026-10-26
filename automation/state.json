@@ -34,6 +34,14 @@
       "verified_at": "2026-10-25T09:39:14.128029+09:00",
       "last_error": "",
       "queue_path": "queue/2026-10-22-pre-disclosure-patent-disclosure-before-filing.json"
+    },
+    "2026-10-26": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-10-26-using-pct-international-search-report.md",
+      "verified_at": "2026-10-26T09:49:46.617633+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-10-22-pct-search-using-pct-international-search-report.json"
     }
   }
 }
