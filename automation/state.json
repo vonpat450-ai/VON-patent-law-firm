@@ -42,6 +42,14 @@
       "verified_at": "2026-10-26T09:49:46.617633+09:00",
       "last_error": "",
       "queue_path": "queue/2026-10-22-pct-search-using-pct-international-search-report.json"
+    },
+    "2026-10-27": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-10-27-first-to-file-system-patent.md",
+      "verified_at": "2026-10-27T10:41:00.192339+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-10-23-pre-disclosure-first-to-file-system-patent.json"
     }
   }
 }
