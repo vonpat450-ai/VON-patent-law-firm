@@ -6,6 +6,7 @@ Text is rendered locally so generated images cannot misspell Korean.
 
 from __future__ import annotations
 
+from datetime import date
 from io import BytesIO
 import json
 import os
@@ -123,6 +124,13 @@ def magnific_photo(prompt: str, api_key: str) -> Image.Image:
 THUMB_SIZE = (1200, 600)
 TITLE_FONT_SIZE = 78  # About 105 pt at the example's 1600-pixel width.
 TITLE_MAX_WIDTH = 920
+PANEL_OPACITY_START = date(2026, 10, 29)
+
+
+def panel_opacity_for_slug(slug: str) -> int:
+    """Keep published artwork unchanged; use the stronger panel from Oct 29."""
+    match = re.match(r"^daily-(\d{4}-\d{2}-\d{2})(?:-|$)", slug)
+    return 75 if match and date.fromisoformat(match.group(1)) >= PANEL_OPACITY_START else 50
 
 
 def title_lines(label: str, font: ImageFont.FreeTypeFont) -> list[str]:
@@ -147,7 +155,7 @@ def title_lines(label: str, font: ImageFont.FreeTypeFont) -> list[str]:
     return [first, second]
 
 
-def render_thumbnail(photo: Image.Image, label: str, target: Path, *, panel_opacity: int = 50) -> None:
+def render_thumbnail(photo: Image.Image, label: str, target: Path, *, panel_opacity: int = 75) -> None:
     background = ImageOps.fit(photo.convert("RGB"), THUMB_SIZE, Image.Resampling.LANCZOS)
     font = ImageFont.truetype(str(FONT), TITLE_FONT_SIZE)
     lines = title_lines(label, font)
@@ -183,7 +191,7 @@ def render_thumbnail(photo: Image.Image, label: str, target: Path, *, panel_opac
 
 def create_thumbnail(slug: str, title: str, category: str, description: str = "",
                      *, label: str = "", visual: str = "", require_ai: bool = False,
-                     reuse_photo: bool = False, panel_opacity: int = 50) -> str:
+                     reuse_photo: bool = False, panel_opacity: int | None = None) -> str:
     if slug != "pct-country-strategy" and not re.fullmatch(
         r"daily-[0-9]{4}-[0-9]{2}-[0-9]{2}(?:-[a-z0-9]+)*", slug
     ):
@@ -215,7 +223,8 @@ def create_thumbnail(slug: str, title: str, category: str, description: str = ""
     # Save the clean source photo so a later layout revision needs no new AI call.
     ImageOps.fit(photo.convert("RGB"), THUMB_SIZE, Image.Resampling.LANCZOS).save(
         raw_target, "WEBP", quality=88, method=6)
-    render_thumbnail(photo, short_label(title, category, label), target, panel_opacity=panel_opacity)
+    render_thumbnail(photo, short_label(title, category, label), target,
+                     panel_opacity=panel_opacity_for_slug(slug) if panel_opacity is None else panel_opacity)
     return f"assets/{target.name}"
 
 

@@ -37,15 +37,20 @@ class ThumbnailTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "more than two lines"):
             make_thumbnail.title_lines("해외특허 국가단계 준비와 현지 심사 " * 4, font)
 
-    def test_future_panel_is_fifty_percent_black_with_opaque_white_border(self) -> None:
+    def test_october_29_switches_to_seventy_five_percent(self) -> None:
+        self.assertEqual(make_thumbnail.panel_opacity_for_slug("daily-2026-10-28-example"), 50)
+        self.assertEqual(make_thumbnail.panel_opacity_for_slug("daily-2026-10-29-example"), 75)
+        self.assertEqual(make_thumbnail.panel_opacity_for_slug("daily-2026-11-04-example"), 75)
+
+    def test_future_panel_is_seventy_five_percent_black_with_opaque_white_border(self) -> None:
         with tempfile.TemporaryDirectory(dir=Path(__file__).resolve().parents[1]) as folder:
             target = Path(folder) / "example.webp"
             make_thumbnail.render_thumbnail(Image.new("RGB", (1200, 600), "#808080"), "특허 등록", target)
             with Image.open(target) as result:
-                # A point within the panel but above the glyphs: 128 * 0.5 ≈ 64.
+                # A point within the panel but above the glyphs: 128 * 0.25 ≈ 32.
                 interior = result.getpixel((600, 245))[0]
-                self.assertGreaterEqual(interior, 58)
-                self.assertLessEqual(interior, 71)
+                self.assertGreaterEqual(interior, 27)
+                self.assertLessEqual(interior, 38)
                 # Away from the panel the photograph is not darkened.
                 self.assertGreaterEqual(result.getpixel((40, 40))[0], 123)
                 font = ImageFont.truetype(str(make_thumbnail.FONT), make_thumbnail.TITLE_FONT_SIZE)
