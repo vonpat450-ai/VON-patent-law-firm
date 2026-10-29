@@ -58,6 +58,14 @@
       "verified_at": "2026-10-28T10:53:19.701852+09:00",
       "last_error": "",
       "queue_path": "queue/2026-10-23-overseas-protection-obtaining-patents-abroad-routes-costs.json"
+    },
+    "2026-10-29": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-10-29-pct-fee-reduction-conditions-guide.md",
+      "verified_at": "2026-10-29T10:59:41.891872+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-10-23-pct-national-phase-pct-fee-reduction-conditions-guide.json"
     }
   }
 }
