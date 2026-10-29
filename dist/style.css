@@ -429,3 +429,6 @@ html,body,button,input,select,textarea{font-family:'Pretendard','Malgun Gothic',
 .overseas-milestones>div::before{top:26px}
 .overseas-milestones b{min-height:22px}
 .overseas-milestones small{margin-top:21px}
+
+/* Give the homepage section links breathing room above the cards and FAQ list. */
+body[data-page="home"] .section-topline > .text-link{transform:translateY(-12px)}
