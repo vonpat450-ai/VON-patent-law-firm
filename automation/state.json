@@ -74,6 +74,14 @@
       "verified_at": "2026-10-30T11:14:44.305251+09:00",
       "last_error": "",
       "queue_path": "queue/2026-10-24-pct-national-phase-pct-international-search-unfavorable-response.json"
+    },
+    "2026-10-31": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-10-31-patent-first-filing-principle-guide.md",
+      "verified_at": "2026-10-31T10:54:53.766496+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-10-24-patent-description-patent-first-filing-principle-guide.json"
     }
   }
 }
