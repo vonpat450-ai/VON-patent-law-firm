@@ -90,6 +90,14 @@
       "verified_at": "2026-11-01T10:36:26.303554+09:00",
       "last_error": "",
       "queue_path": "queue/2026-10-25-pre-disclosure-patent-requirements-novelty-inventiveness.json"
+    },
+    "2026-11-02": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-11-02-patent-examination-request-period-rules.md",
+      "verified_at": "2026-11-02T10:58:27.332705+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-10-26-patent-examination-patent-examination-request-period-rules.json"
     }
   }
 }
