@@ -98,6 +98,14 @@
       "verified_at": "2026-11-02T10:58:27.332705+09:00",
       "last_error": "",
       "queue_path": "queue/2026-10-26-patent-examination-patent-examination-request-period-rules.json"
+    },
+    "2026-11-03": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-11-03-paris-route-versus-pct-route.md",
+      "verified_at": "2026-11-03T12:46:39.131256+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-10-27-pct-search-paris-route-versus-pct-route.json"
     }
   }
 }
