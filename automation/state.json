@@ -114,6 +114,14 @@
       "verified_at": "2026-11-04T11:48:55.917545+09:00",
       "last_error": "",
       "queue_path": "queue/2026-10-28-pre-disclosure-patent-claim-submission-deferral-guide.json"
+    },
+    "2026-11-05": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-11-05-pct-application-eligibility-and-receiving-office.md",
+      "verified_at": "2026-11-05T11:56:41.722721+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-10-29-pct-search-pct-application-eligibility-and-receiving-office.json"
     }
   }
 }
