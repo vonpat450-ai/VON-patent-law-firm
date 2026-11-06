@@ -122,6 +122,14 @@
       "verified_at": "2026-11-05T11:56:41.722721+09:00",
       "last_error": "",
       "queue_path": "queue/2026-10-29-pct-search-pct-application-eligibility-and-receiving-office.json"
+    },
+    "2026-11-06": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-11-06-patent-filing-timing-and-confidentiality.md",
+      "verified_at": "2026-11-06T11:57:21.655731+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-10-30-overseas-protection-patent-filing-timing-and-confidentiality.json"
     }
   }
 }
