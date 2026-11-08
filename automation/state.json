@@ -138,6 +138,14 @@
       "verified_at": "2026-11-07T11:27:10.236936+09:00",
       "last_error": "",
       "queue_path": "queue/2026-10-31-pre-disclosure-patent-examination-process-and-requirements.json"
+    },
+    "2026-11-08": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-11-08-pct-priority-claim-guide.md",
+      "verified_at": "2026-11-08T10:55:59.320775+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-11-01-pct-search-pct-priority-claim-guide.json"
     }
   }
 }
