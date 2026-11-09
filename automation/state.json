@@ -146,6 +146,14 @@
       "verified_at": "2026-11-08T10:55:59.320775+09:00",
       "last_error": "",
       "queue_path": "queue/2026-11-01-pct-search-pct-priority-claim-guide.json"
+    },
+    "2026-11-09": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-11-09-patent-reexamination-request-guide.md",
+      "verified_at": "2026-11-09T11:12:04.839951+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-11-02-patent-examination-patent-reexamination-request-guide.json"
     }
   }
 }
