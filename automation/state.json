@@ -154,6 +154,14 @@
       "verified_at": "2026-11-09T11:12:04.839951+09:00",
       "last_error": "",
       "queue_path": "queue/2026-11-02-patent-examination-patent-reexamination-request-guide.json"
+    },
+    "2026-11-10": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-11-10-patent-application-publication-compensation-claim.md",
+      "verified_at": "2026-11-10T13:24:41.037000+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-11-03-patent-examination-patent-application-publication-compensation-claim.json"
     }
   }
 }
