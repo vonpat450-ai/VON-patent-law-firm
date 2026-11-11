@@ -162,6 +162,14 @@
       "verified_at": "2026-11-10T13:24:41.037000+09:00",
       "last_error": "",
       "queue_path": "queue/2026-11-03-patent-examination-patent-application-publication-compensation-claim.json"
+    },
+    "2026-11-11": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-11-11-patent-filing-secrecy-and-timing.md",
+      "verified_at": "2026-11-11T11:20:58.306757+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-11-04-overseas-protection-patent-filing-secrecy-and-timing.json"
     }
   }
 }
