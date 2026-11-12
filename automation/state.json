@@ -170,6 +170,14 @@
       "verified_at": "2026-11-11T11:20:58.306757+09:00",
       "last_error": "",
       "queue_path": "queue/2026-11-04-overseas-protection-patent-filing-secrecy-and-timing.json"
+    },
+    "2026-11-12": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-11-12-deferred-patent-examination-request-guide.md",
+      "verified_at": "2026-11-12T12:28:36.054667+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-11-05-patent-examination-deferred-patent-examination-request-guide.json"
     }
   }
 }
