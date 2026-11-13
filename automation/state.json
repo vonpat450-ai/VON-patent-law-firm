@@ -178,6 +178,14 @@
       "verified_at": "2026-11-12T12:28:36.054667+09:00",
       "last_error": "",
       "queue_path": "queue/2026-11-05-patent-examination-deferred-patent-examination-request-guide.json"
+    },
+    "2026-11-13": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-11-13-patent-examination-request-procedure-guide.md",
+      "verified_at": "2026-11-13T12:01:40.651822+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-11-06-pre-disclosure-patent-examination-request-procedure-guide.json"
     }
   }
 }
