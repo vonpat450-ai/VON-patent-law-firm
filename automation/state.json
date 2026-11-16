@@ -202,6 +202,14 @@
       "verified_at": "2026-11-15T11:14:29.944806+09:00",
       "last_error": "",
       "queue_path": "queue/2026-11-08-overseas-protection-drafting-foreign-patent-application-claims.json"
+    },
+    "2026-11-16": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-11-16-overseas-patent-conditions-and-exclusions-guide.md",
+      "verified_at": "2026-11-16T11:27:56.261425+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-11-09-overseas-protection-overseas-patent-conditions-and-exclusions-guide.json"
     }
   }
 }
