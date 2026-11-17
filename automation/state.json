@@ -210,6 +210,14 @@
       "verified_at": "2026-11-16T11:27:56.261425+09:00",
       "last_error": "",
       "queue_path": "queue/2026-11-09-overseas-protection-overseas-patent-conditions-and-exclusions-guide.json"
+    },
+    "2026-11-17": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-11-17-patent-examination-request-period-guide.md",
+      "verified_at": "2026-11-17T13:50:46.943370+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-11-10-pre-disclosure-patent-examination-request-period-guide.json"
     }
   }
 }
