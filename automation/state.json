@@ -226,6 +226,14 @@
       "verified_at": "2026-11-18T12:56:06.015994+09:00",
       "last_error": "",
       "queue_path": "queue/2026-11-11-overseas-protection-overseas-patent-costs-and-fees.json"
+    },
+    "2026-11-19": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-11-19-foreign-patent-substantive-examination-procedure.md",
+      "verified_at": "2026-11-19T12:54:10.559393+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-11-13-overseas-protection-foreign-patent-substantive-examination-procedure.json"
     }
   }
 }
