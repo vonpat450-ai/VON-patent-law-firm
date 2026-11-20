@@ -234,6 +234,14 @@
       "verified_at": "2026-11-19T12:54:10.559393+09:00",
       "last_error": "",
       "queue_path": "queue/2026-11-13-overseas-protection-foreign-patent-substantive-examination-procedure.json"
+    },
+    "2026-11-20": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-11-20-pct-national-phase-early-entry-guide.md",
+      "verified_at": "2026-11-20T12:46:46.592468+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-11-13-pct-search-pct-national-phase-early-entry-guide.json"
     }
   }
 }
