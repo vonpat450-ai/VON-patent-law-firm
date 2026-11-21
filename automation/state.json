@@ -242,6 +242,14 @@
       "verified_at": "2026-11-20T12:46:46.592468+09:00",
       "last_error": "",
       "queue_path": "queue/2026-11-13-pct-search-pct-national-phase-early-entry-guide.json"
+    },
+    "2026-11-21": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-11-21-patent-protection-costs-and-filing-considerations.md",
+      "verified_at": "2026-11-21T12:37:44.539774+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-11-14-overseas-protection-patent-protection-costs-and-filing-considerations.json"
     }
   }
 }
