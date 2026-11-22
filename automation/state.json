@@ -250,6 +250,14 @@
       "verified_at": "2026-11-21T12:37:44.539774+09:00",
       "last_error": "",
       "queue_path": "queue/2026-11-14-overseas-protection-patent-protection-costs-and-filing-considerations.json"
+    },
+    "2026-11-22": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-11-22-patent-utility-model-conversion-guide.md",
+      "verified_at": "2026-11-22T11:43:34.932450+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-11-15-patent-examination-patent-utility-model-conversion-guide.json"
     }
   }
 }
