@@ -258,6 +258,14 @@
       "verified_at": "2026-11-22T11:43:34.932450+09:00",
       "last_error": "",
       "queue_path": "queue/2026-11-15-patent-examination-patent-utility-model-conversion-guide.json"
+    },
+    "2026-11-23": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-11-23-pct-international-application-advantages-and-timeframe.md",
+      "verified_at": "2026-11-23T12:19:45.532821+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-11-16-pct-search-pct-international-application-advantages-and-timeframe.json"
     }
   }
 }
