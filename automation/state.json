@@ -266,6 +266,14 @@
       "verified_at": "2026-11-23T12:19:45.532821+09:00",
       "last_error": "",
       "queue_path": "queue/2026-11-16-pct-search-pct-international-application-advantages-and-timeframe.json"
+    },
+    "2026-11-24": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-11-24-patent-formal-examination-defects-guide.md",
+      "verified_at": "2026-11-24T15:34:40.348312+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-11-17-patent-examination-patent-formal-examination-defects-guide.json"
     }
   }
 }
