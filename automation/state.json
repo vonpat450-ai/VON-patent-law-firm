@@ -274,6 +274,14 @@
       "verified_at": "2026-11-24T15:34:40.348312+09:00",
       "last_error": "",
       "queue_path": "queue/2026-11-17-patent-examination-patent-formal-examination-defects-guide.json"
+    },
+    "2026-11-25": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-11-25-patent-disclosure-novelty-risk.md",
+      "verified_at": "2026-11-25T14:08:04.857521+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-11-19-pre-disclosure-patent-disclosure-novelty-risk.json"
     }
   }
 }
