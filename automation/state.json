@@ -282,6 +282,14 @@
       "verified_at": "2026-11-25T14:08:04.857521+09:00",
       "last_error": "",
       "queue_path": "queue/2026-11-19-pre-disclosure-patent-disclosure-novelty-risk.json"
+    },
+    "2026-11-26": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-11-26-domestic-priority-claim-patent-guide.md",
+      "verified_at": "2026-11-26T13:34:45.976253+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-11-19-patent-description-domestic-priority-claim-patent-guide.json"
     }
   }
 }
