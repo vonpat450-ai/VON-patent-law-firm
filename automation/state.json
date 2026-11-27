@@ -290,6 +290,14 @@
       "verified_at": "2026-11-26T13:34:45.976253+09:00",
       "last_error": "",
       "queue_path": "queue/2026-11-19-patent-description-domestic-priority-claim-patent-guide.json"
+    },
+    "2026-11-27": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-11-27-pct-international-application-language-requirements.md",
+      "verified_at": "2026-11-27T13:38:50.075566+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-11-20-pct-search-pct-international-application-language-requirements.json"
     }
   }
 }
