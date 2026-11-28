@@ -298,6 +298,14 @@
       "verified_at": "2026-11-27T13:38:50.075566+09:00",
       "last_error": "",
       "queue_path": "queue/2026-11-20-pct-search-pct-international-application-language-requirements.json"
+    },
+    "2026-11-28": {
+      "status": "published",
+      "attempt_slots": [],
+      "article_path": "articles/daily-2026-11-28-patent-decision-registration-and-term.md",
+      "verified_at": "2026-11-28T13:23:23.804689+09:00",
+      "last_error": "",
+      "queue_path": "queue/2026-11-21-patent-examination-patent-decision-registration-and-term.json"
     }
   }
 }
